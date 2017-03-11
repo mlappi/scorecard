@@ -1,4 +1,4 @@
-package fi.mlappi.golf.game;
+package fi.mlappi.golf.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fi.mlappi.golf.model.Course;
-import fi.mlappi.golf.model.CourseRepository;
 import fi.mlappi.golf.model.Game;
-import fi.mlappi.golf.model.GameRepository;
 import fi.mlappi.golf.model.Hole;
-import fi.mlappi.golf.model.HoleRepository;
+import fi.mlappi.golf.repository.CourseRepository;
+import fi.mlappi.golf.repository.GameRepository;
+import fi.mlappi.golf.repository.HoleRepository;
 
 @Service("GameService")
 public class GameService {

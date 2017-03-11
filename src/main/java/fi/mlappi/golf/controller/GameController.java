@@ -1,4 +1,4 @@
-package fi.mlappi.golf.game;
+package fi.mlappi.golf.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,9 +27,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import fi.mlappi.golf.model.Game;
 import fi.mlappi.golf.model.Player;
 import fi.mlappi.golf.model.Scorecard;
-import fi.mlappi.golf.player.PlayerController;
-import fi.mlappi.golf.player.PlayerService;
-import fi.mlappi.golf.scorecard.ScorecardService;
+import fi.mlappi.golf.service.GameService;
+import fi.mlappi.golf.service.PlayerService;
+import fi.mlappi.golf.service.ScorecardService;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -106,9 +106,9 @@ public class GameController  {
 
 		double pot = game.getBet() * scores.size();
 		for (int i = 1; i < 19; i++) {
-			Set<Long> pIds = getPlayersForLowestScore(scores, i, game);
-			if (!pIds.isEmpty()) {
-				game.getWinMap().put(i, pIds);
+			Set<Player> players = getPlayersForLowestScore(scores, i, game);
+			if (!players.isEmpty()) {
+				game.getWinMap().put(i, players);
 			}
 		}
 
@@ -143,31 +143,31 @@ public class GameController  {
 		//dispatcher.forward(req, resp);
 	}
 
-	private Set<Long> getPlayersForLowestScore(List<Scorecard> scores, int hole, Game game) {
-		Set<Long> players = new HashSet<>();
-		long bestPlaeyerId = 0;
+	private Set<Player> getPlayersForLowestScore(List<Scorecard> scores, int hole, Game game) {
+		Set<Player> players = new HashSet<>();
+		Player bestPlayer = null;
 		long bestScore = 0;
 		for (Scorecard scorecard : scores) {
 			if (bestScore == 0) {
-				bestPlaeyerId = scorecard.getPlayerId();
+				bestPlayer = scorecard.getPlayer();
 				bestScore = scorecard.getScore(hole);
-				players.add(bestPlaeyerId);
+				players.add(bestPlayer);
 			} else {
 				if (bestScore > scorecard.getScore(hole)) {
-					players.remove(bestPlaeyerId);
-					bestPlaeyerId = scorecard.getPlayerId();
+					players.remove(bestPlayer);
+					bestPlayer = scorecard.getPlayer();
 					bestScore = scorecard.getScore(hole);
-					players.add(bestPlaeyerId);
+					players.add(bestPlayer);
 				} else if (bestScore == scorecard.getScore(hole) && game.getPar(hole) <= bestScore) {					
-					players.remove(bestPlaeyerId);
-					bestPlaeyerId = 0;
+					players.remove(bestPlayer);
+					bestPlayer = null;
 				}
 				/*
 				 * Jenkkiskinisääntö, birkulla aina rahaa jos ei ilkkoja
 				 */
 				else if (bestScore == scorecard.getScore(hole) && game.getPar(hole) > bestScore) {
-					bestPlaeyerId = 0;
-					players.add(scorecard.getPlayerId());
+					bestPlayer = null;
+					players.add(scorecard.getPlayer());
 				}
 			}
 		}

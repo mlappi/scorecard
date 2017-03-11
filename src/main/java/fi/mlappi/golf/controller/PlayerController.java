@@ -1,4 +1,4 @@
-package fi.mlappi.golf.player;
+package fi.mlappi.golf.controller;
 
 import java.util.List;
 
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fi.mlappi.golf.model.Player;
+import fi.mlappi.golf.service.PlayerService;
 import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 

@@ -53,7 +53,7 @@
                                 </c:if>
                                 <tr class="${classSucess}">
                                     <td>${loop.index +1}</td>                                    
-                                    <td><a href="/game/scores/${game.id}">${game.name}</a></td>
+                                    <td><a href="/score/list/${game.id}">${game.name}</a></td>
                                     <td>${game.date}</td>
                                     <td>${game.bet}</td>   
                                     <td><a href="/game/remove/${game.id}" id="remove"> 

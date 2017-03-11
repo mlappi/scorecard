@@ -1,4 +1,4 @@
-package fi.mlappi.golf.player;
+package fi.mlappi.golf.service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fi.mlappi.golf.model.Player;
-import fi.mlappi.golf.model.PlayerRepository;
+import fi.mlappi.golf.repository.PlayerRepository;
 
 @Service("PlayerService")
 public class PlayerService {

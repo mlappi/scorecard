@@ -40,7 +40,7 @@ public class Game {
     private Course course;
     
     @Transient
-	private Map<Integer, Set<Long>> winMap = new HashMap<>();
+	private Map<Integer, Set<Player>> winMap = new HashMap<>();
     
 
 	public Game() {

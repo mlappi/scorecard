@@ -1,9 +1,10 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
     <head>
-        <link rel="stylesheet" href="../css/bootstrap.min.css">
+        <link rel="stylesheet" href="../../css/bootstrap.min.css">
         <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>   		
-        <script src="../js/bootstrap.min.js"></script>               
+        <script src="../../js/bootstrap.min.js"></script>               
     </head>
 
     <body>          
@@ -22,7 +23,6 @@
             </c:if> 
             <form action="/game" method="post" id="scoresForm" role="form" >              
                 <input type="hidden" id="idScore" name="idScore">
-                <input type="hidden" id="action" name="action">
                 <c:choose>
                     <c:when test="${not empty scoreList}">
                         <table  class="table table-striped">
@@ -94,9 +94,9 @@
                                 </c:if>
                                 <tr class="${classSucess}">
                                     <td>
-                                        <a href="/score?idScore=${score.id}&searchAction=searchById">${loop.index +1}</a>
+                                        <a href="/score/edits/{score.id}">${loop.index +1}</a>
                                     </td>                                    
-                                    <td><span class="nowrap">${score.player}</span></td>
+                                    <td><span class="nowrap">${fn:substring(score.player.firstName, 0, 1)} ${score.player.lastName}</span></td>
                                     <td class="${score.isWinner(1) ? 'bg-danger text-danger' : ''}">${score.hole1}</td>
                                     <td class="${score.isWinner(2) ? 'bg-danger text-danger' : ''}">${score.hole2}</td>
                                     <td class="${score.isWinner(3) ? 'bg-danger text-danger' : ''}">${score.hole3}</td>
@@ -106,7 +106,7 @@
                                     <td class="${score.isWinner(7) ? 'bg-danger text-danger' : ''}">${score.hole7}</td>
                                     <td class="${score.isWinner(8) ? 'bg-danger text-danger' : ''}">${score.hole8}</td>
                                     <td class="${score.isWinner(9) ? 'bg-danger text-danger' : ''}">${score.hole9}</td>
-                                    <td>${score.in}</td>
+                                    <td>${score.countOut}</td>
                                     <td class="${score.isWinner(10) ? 'bg-danger text-danger' : ''}">${score.hole10}</td>
                                     <td class="${score.isWinner(11) ? 'bg-danger text-danger' : ''}">${score.hole11}</td>
                                     <td class="${score.isWinner(12) ? 'bg-danger text-danger' : ''}">${score.hole12}</td>
@@ -116,17 +116,15 @@
                                     <td class="${score.isWinner(16) ? 'bg-danger text-danger' : ''}">${score.hole16}</td>
                                     <td class="${score.isWinner(17) ? 'bg-danger text-danger' : ''}">${score.hole17}</td>
                                     <td class="${score.isWinner(18) ? 'bg-danger text-danger' : ''}">${score.hole18}</td>
-                                    <td>${score.out}</td>
-                                    <td>${score.total}</td>
+                                    <td>${score.countIn}</td>
+                                    <td>${score.countTotal}</td>
                                     <td>${score.win}</td>
-                                    <td><a href="#" id="remove" 
-                                           onclick="document.getElementById('action').value = 'remove';document.getElementById('idScore').value = '${score.id}';                                                    
-                                                    document.getElementById('scoresForm').submit();"> 
-                                            <span class="glyphicon glyphicon-trash"/>
+                                    <td><a href="/score/remove/${score.id}" id="remove"> 
+                                            <span class="glyphicon glyphicon-trash"></span>
                                         </a>                                                   
                                     </td>
-                                    <td><a id="edit" href="/score?idScore=${score.id}&searchAction=searchById">
-                                    	<span class="glyphicon glyphicon-edit"/></a>
+                                    <td><a id="edit" href="/score/edit/${score.id}">
+                                    	<span class="glyphicon glyphicon-edit"></span></a>
                                     </td>                                    
                                 </tr>
                             </c:forEach>               
@@ -135,12 +133,12 @@
                     <c:otherwise>
                         <br>           
                         <div class="alert alert-info">
-                            No scorecard found matching your search criteria
+                            No scorecards found matching your search criteria
                         </div>
                     </c:otherwise>
                 </c:choose>                        
             </form>
-            <form action ="jsp/new-scorecard.jsp">            
+            <form action ="/score/new">            
                 <br></br>
                 <button type="submit" class="btn btn-primary  btn-md">New Scorecard</button> 
             </form>

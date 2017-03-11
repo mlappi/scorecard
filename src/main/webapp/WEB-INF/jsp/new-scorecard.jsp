@@ -1,28 +1,28 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <html>
     <head>
-        <link rel="stylesheet" href="../css/bootstrap.min.css">
+        <link rel="stylesheet" href="../../css/bootstrap.min.css">
         <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>   		
-        <script src="../js/bootstrap.min.js"></script>
+        <script src="../../js/bootstrap.min.js"></script>
     </head>
     <body>
         <div class="container">
 	    <ul class="nav nav-tabs">
 	    	<li><a href="/"><span class="glyphicon glyphicon-user">  Players</span></a></li>
 	        <li><a href="/game">Games</a></li>	        
-	        <li><a href="/game">Game</a></li>
+	        <li><a href="/score/list/${gameId}">Game</a></li>
 	        <li class="active"><a href="#">Scorecard</a></li>
 	    </ul>   
-            <form action="/score" method="post" role="form" data-toggle="validator" >
-                <c:if test ="${empty action}">                        	
-                    <c:set var="action" value="add"/>
-                </c:if>
-                <input type="hidden" id="action" name="action" value="${action}">
-                <input type="hidden" id="idScorecard" name="idScorecard" value="${player.id}">
+            <form action="/score/save" method="POST" data-toggle="validator" role="form">
+                <input type="hidden" id="id" name="id" value="${score.id}">
+                <input type="hidden" id="playerId" name="playerId" value="${playerId}">
+                <input type="hidden" id="gameId" name="gameId" value="${gameId}">
+                
                 <div class="table-responsive">
                  <table class="table table-striped table-bordered">
 	                <caption>
-	                    ${player.name} ${player.lastName} 
+	                    ${score.player.firstName} ${score.player.lastName} 
 	                </caption>
                      <thead>
                          <tr>
@@ -39,16 +39,16 @@
                          </tr>
                      </thead>
                      <tr>
-                          <td><input type="text" onchange="countOut();" name="out" id="hole1" class="form-control" placeholder="5" value="${score.hole1}"/></td>  
-                          <td><input type="text" onchange="countOut();" name="out" id="hole2" class="form-control" placeholder="4" value="${score.hole2}"/></td>
-                          <td><input type="text" onchange="countOut();" name="out" id="hole3" class="form-control" placeholder="3" value="${score.hole3}"/></td>
-                          <td><input type="text" onchange="countOut();" name="out" id="hole4" class="form-control" placeholder="4" value="${score.hole4}"/></td>                          
-                          <td><input type="text" onchange="countOut();" name="out" id="hole5" class="form-control" placeholder="3" value="${score.hole5}"/></td>
-                          <td><input type="text" onchange="countOut();" name="out" id="hole6" class="form-control" placeholder="5" value="${score.hole6}"/></td>
-                          <td><input type="text" onchange="countOut();" name="out" id="hole7" class="form-control" placeholder="4" value="${score.hole7}"/></td>
-                          <td><input type="text" onchange="countOut();" name="out" id="hole8" class="form-control" placeholder="3" value="${score.hole8}"/></td>
-                          <td><input type="text" onchange="countOut();" name="out" id="hole9" class="form-control" placeholder="4" value="${score.hole9}"/></td>
-                          <td><input type="text" name="outSum" id="outSum" class="form-control" readonly="readonly"/></td>
+                          <td><input type="text" onchange="countOut();" name="hole1" id="out_hole1" class="form-control" placeholder="5" value="${score.hole1}"/></td>  
+                          <td><input type="text" onchange="countOut();" name="hole2" id="out_hole2" class="form-control" placeholder="4" value="${score.hole2}"/></td>
+                          <td><input type="text" onchange="countOut();" name="hole3" id="out_hole3" class="form-control" placeholder="3" value="${score.hole3}"/></td>
+                          <td><input type="text" onchange="countOut();" name="hole4" id="out_hole4" class="form-control" placeholder="4" value="${score.hole4}"/></td>                          
+                          <td><input type="text" onchange="countOut();" name="hole5" id="out_hole5" class="form-control" placeholder="3" value="${score.hole5}"/></td>
+                          <td><input type="text" onchange="countOut();" name="hole6" id="out_hole6" class="form-control" placeholder="5" value="${score.hole6}"/></td>
+                          <td><input type="text" onchange="countOut();" name="hole7" id="out_hole7" class="form-control" placeholder="4" value="${score.hole7}"/></td>
+                          <td><input type="text" onchange="countOut();" name="hole8" id="out_hole8" class="form-control" placeholder="3" value="${score.hole8}"/></td>
+                          <td><input type="text" onchange="countOut();" name="hole9" id="out_hole9" class="form-control" placeholder="4" value="${score.hole9}"/></td>
+                          <td><input type="text" name="outSum" id="outSum" value="${score.countOut}" class="form-control" readonly="readonly"/></td>
                      </tr>
                   </table>
                   <table class="table table-striped table-bordered">
@@ -67,21 +67,21 @@
                          </tr>                         
                      </thead>
                      <tr>
-                          <td><input type="text" onchange="countIn();" name="in" name="hole10" id="hole10" class="form-control" placeholder="4" value="${score.hole10}"/></td>
-                          <td><input type="text" onchange="countIn();" name="in" name="hole11" id="hole11" class="form-control" placeholder="5" value="${score.hole11}"/></td>  
-                          <td><input type="text" onchange="countIn();" name="in" name="hole12" id="hole12" class="form-control" placeholder="4" value="${score.hole12}"/></td>
-                          <td><input type="text" onchange="countIn();" name="in" name="hole13" id="hole13" class="form-control" placeholder="3" value="${score.hole13}"/></td>
-                          <td><input type="text" onchange="countIn();" name="in" name="hole14" id="hole14" class="form-control" placeholder="4" value="${score.hole14}"/></td>                          
-                          <td><input type="text" onchange="countIn();" name="in" name="hole15" id="hole15" class="form-control" placeholder="3" value="${score.hole15}"/></td>
-                          <td><input type="text" onchange="countIn();" name="in" name="hole16" id="hole16" class="form-control" placeholder="5" value="${score.hole16}"/></td>
-                          <td><input type="text" onchange="countIn();" name="in" name="hole17" id="hole17" class="form-control" placeholder="4" value="${score.hole17}"/></td>
-                          <td><input type="text" onchange="countIn();" name="in" name="hole18" id="hole18" class="form-control" placeholder="4" value="${score.hole18}"/></td>                          
-                          <td><input type="text" name="inSum" id="inSum" class="form-control" readonly="readonly"/></td>
+                          <td><input type="text" onchange="countIn();" name="hole10" id="in_hole10" class="form-control" placeholder="4" value="${score.hole10}"/></td>
+                          <td><input type="text" onchange="countIn();" name="hole11" id="in_hole11" class="form-control" placeholder="5" value="${score.hole11}"/></td>  
+                          <td><input type="text" onchange="countIn();" name="hole12" id="in_hole12" class="form-control" placeholder="4" value="${score.hole12}"/></td>
+                          <td><input type="text" onchange="countIn();" name="hole13" id="in_hole13" class="form-control" placeholder="3" value="${score.hole13}"/></td>
+                          <td><input type="text" onchange="countIn();" name="hole14" id="in_hole14" class="form-control" placeholder="4" value="${score.hole14}"/></td>                          
+                          <td><input type="text" onchange="countIn();" name="hole15" id="in_hole15" class="form-control" placeholder="3" value="${score.hole15}"/></td>
+                          <td><input type="text" onchange="countIn();" name="hole16" id="in_hole16" class="form-control" placeholder="5" value="${score.hole16}"/></td>
+                          <td><input type="text" onchange="countIn();" name="hole17" id="in_hole17" class="form-control" placeholder="4" value="${score.hole17}"/></td>
+                          <td><input type="text" onchange="countIn();" name="hole18" id="in_hole18" class="form-control" placeholder="4" value="${score.hole18}"/></td>                          
+                          <td><input type="text" name="inSum" id="inSum" value="${score.countIn}" class="form-control" readonly="readonly"/></td>
                           
                      </tr>
                      <tr><td class="text-center">Total</td></tr>
                      <tr>                     
-                     	  <td><input type="text" name="total" id="total" class="form-control" readonly="readonly"/></td>	
+                     	  <td><input type="text" name="total" id="total" value="${score.countTotal}" class="form-control" readonly="readonly"/></td>	
                      </tr>
                   </table>                  
                 </div>              
@@ -92,24 +92,24 @@
                 </div>    			                                                                                           
             </form>
 	    <script type="text/javascript">
-	 	    var h1 = document.getElementById("hole1"),
-	 	    h2 = document.getElementById("hole2"),
-	 	    h3 = document.getElementById("hole3"),
-	 	   	h4 = document.getElementById("hole4"),
-	 		h5 = document.getElementById("hole5"),
-		 	h6 = document.getElementById("hole6"),
-		 	h7 = document.getElementById("hole7"),
-	 		h8 = document.getElementById("hole8"),
-	 		h9 = document.getElementById("hole9"),
-	 		h10 = document.getElementById("hole10"),
-	 		h11 = document.getElementById("hole11"),
-	 		h12 = document.getElementById("hole12"),
-	 	    h13 = document.getElementById("hole13"),
-	 	   	h14 = document.getElementById("hole14"),
-	 		h15 = document.getElementById("hole15"),
-		 	h16 = document.getElementById("hole16"),
-		 	h17 = document.getElementById("hole17"),
-	 		h18 = document.getElementById("hole18"),
+	 	    var h1 = document.getElementById("out_hole1"),
+	 	    h2 = document.getElementById("out_hole2"),
+	 	    h3 = document.getElementById("out_hole3"),
+	 	   	h4 = document.getElementById("out_hole4"),
+	 		h5 = document.getElementById("out_hole5"),
+		 	h6 = document.getElementById("out_hole6"),
+		 	h7 = document.getElementById("out_hole7"),
+	 		h8 = document.getElementById("out_hole8"),
+	 		h9 = document.getElementById("out_hole9"),
+	 		h10 = document.getElementById("in_hole10"),
+	 		h11 = document.getElementById("in_hole11"),
+	 		h12 = document.getElementById("in_hole12"),
+	 	    h13 = document.getElementById("in_hole13"),
+	 	   	h14 = document.getElementById("in_hole14"),
+	 		h15 = document.getElementById("in_hole15"),
+		 	h16 = document.getElementById("in_hole16"),
+		 	h17 = document.getElementById("in_hole17"),
+	 		h18 = document.getElementById("in_hole18"),
 	 	    save = document.getElementById("save");
 	 	    
 	 		h1.onkeyup = function(e) {
@@ -227,7 +227,7 @@
  
 	    <script type="text/javascript">
 			function countOut(){
-			    var arr = document.getElementsByName('out');
+			    var arr = $('input[id^=out_]');
 			    var tot=0;
 			    for(var i=0;i<arr.length;i++){
 			        if(parseInt(arr[i].value))
@@ -239,7 +239,7 @@
 			    
 			}
 			function countIn(){
-			    var arr = document.getElementsByName('in');
+				var arr = $('input[id^=in_]');
 			    var tot=0;
 			    for(var i=0;i<arr.length;i++){
 			        if(parseInt(arr[i].value))

@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 
 import lombok.Data;
 import lombok.NonNull;
@@ -24,9 +25,10 @@ import lombok.NonNull;
 @Data
 public class Course {
 	
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
+	@Id
+	@GeneratedValue(generator = "sequence", strategy = GenerationType.SEQUENCE)
+	@SequenceGenerator(name = "sequence", allocationSize = 10)
+	private Long id;
     @NonNull
 	private String name;
 

@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -20,8 +21,9 @@ import lombok.Data;
 @AllArgsConstructor
 public class Player {
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+	@Id
+	@GeneratedValue(generator = "sequence", strategy = GenerationType.SEQUENCE)
+	@SequenceGenerator(name = "sequence", allocationSize = 10)
     private Long id;
     @Column
     @NotEmpty

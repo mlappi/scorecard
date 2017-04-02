@@ -11,7 +11,7 @@ import fi.mlappi.golf.model.Scorecard;
 @Repository
 public interface ScorecardRepository extends CrudRepository<Scorecard, Long> {
 	
-	public List<Scorecard> findByGameId(Long gameId);
+	public List<Scorecard> findByRoundId(Long roundId);
 	
 	
 }

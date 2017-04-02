@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.format.annotation.NumberFormat;
+import org.springframework.format.annotation.NumberFormat.Style;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,7 +34,8 @@ public class Player {
     @NotEmpty
     private String lastName;
     @Column
-    private String hcp;
+    @NumberFormat(style = Style.CURRENCY)
+    private Double hcp;
     @Column
     private String email;
 

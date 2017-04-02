@@ -3,8 +3,10 @@ package fi.mlappi.golf.controller;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
@@ -19,13 +21,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
 
+import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Game;
 import fi.mlappi.golf.model.Player;
+import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.model.Scorecard;
 import fi.mlappi.golf.service.GameService;
 import fi.mlappi.golf.service.PlayerService;
@@ -51,29 +57,70 @@ public class GameController  {
 	@RequestMapping("/game/new")
 	public String add(ModelMap model) {
 		log.debug("add a new game");
-		model.addAttribute("game", new Game());
+		Game game = new Game();
+		game.setDate(new Date());
+		model.addAttribute("game", game);
+		
+		return "new-game";
+	}
+
+	@RequestMapping("/game/addRound/{id}")
+	public String addRound(ModelMap model, @PathVariable("id") long id) {
+		log.debug("add a new round");
+		Game game = gameService.find(id);
+		
+		Round round = new Round();
+		round.setBet(0d);
+		round.setDate(new Date());
+		round.setName("");
+		//TODO: kenttäeditori
+		round.setCourse(gameService.getMuurame());				
+		game.getRound().add(round);
+		
+		model.addAttribute("game", game);
+		
 		return "new-game";
 	}
 
 	@RequestMapping(value = "/game/edit/{id}")
-	public String edit(ModelMap model, @PathVariable("id") long id) {
+	public ModelAndView edit(ModelMap model, @PathVariable("id") long id) {
 		log.debug("edit game " + id);
 		model.addAttribute("game", gameService.find(id));
-		return "new-game";
+		return new ModelAndView("new-game");
+		//return new ModelAndView("redirect:/new-game");
 	}
 
 	@RequestMapping(value = "/game/remove/{id}")
 	public String remove(ModelMap model, @PathVariable("id") long id) {
 		log.debug("remove game " + id);
 		gameService.delete(id);
-		return games(model);
+		List<Game> games = gameService.getAllGames();
+		model.addAttribute("games", games);
+		return "list-games";
+	}
+
+	@RequestMapping(value = "/game/remove-round/{gameId}/{id}")
+	public String removeRound(ModelMap model, @PathVariable("gameId") long gameId, @PathVariable("id") long id) {
+		if(id > 0) {
+			log.debug("remove round " + id);
+			gameService.removeRound(id);
+		}
+		model.put("message", "The round successfully removed.");
+		return "redirect:/game/edit/"+gameId;
 	}
 
 	@RequestMapping(value = "/game/save", method = RequestMethod.POST)
-	public String save(ModelMap model, @ModelAttribute("player") @Valid Game game, BindingResult result) {
+	public String save(ModelMap model, @ModelAttribute("game") @Valid Game game, BindingResult result) {
 		log.debug("save: " + game.toString());
 		boolean newGame = game.getId() == null ? true : false;
-		if (!result.hasErrors()) {			
+		if (!result.hasErrors()) {
+			log.debug("rounds " +game.getRound().size());
+			for (Round round : game.getRound()) {
+				log.debug("save round");
+				round.setGame(game);
+				round.setCourse(gameService.getMuurame());
+				gameService.save(round);				
+			}
 			gameService.save(game);
 			if(newGame)
 				model.put("message", "The new game has been successfully created.");				
@@ -81,7 +128,12 @@ public class GameController  {
 				model.put("message", "The game has been successfully updated.");
 			model.put("idGame", game.getId());
 		}
-		return games(model);
+		else {
+			for (ObjectError e : result.getAllErrors()) {
+				log.error(e.getDefaultMessage());
+			}
+		}
+		return "new-game";//games(model);
 	}
 
 	@RequestMapping(value = "/game/search", method = RequestMethod.POST)
@@ -96,7 +148,7 @@ public class GameController  {
 	private void searchGameAndScores(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		long idGame = Integer.valueOf(req.getParameter("idGame"));
-		Game game = null;
+		Round game = null;
 		try {
 			//game = gameService.getGame(idGame);
 		} catch (Exception ex) {
@@ -108,7 +160,7 @@ public class GameController  {
 		for (int i = 1; i < 19; i++) {
 			Set<Player> players = getPlayersForLowestScore(scores, i, game);
 			if (!players.isEmpty()) {
-				game.getWinMap().put(i, players);
+				game.getWinMap().put(i, players);//
 			}
 		}
 
@@ -143,7 +195,7 @@ public class GameController  {
 		//dispatcher.forward(req, resp);
 	}
 
-	private Set<Player> getPlayersForLowestScore(List<Scorecard> scores, int hole, Game game) {
+	private Set<Player> getPlayersForLowestScore(List<Scorecard> scores, int hole, Round game) {
 		Set<Player> players = new HashSet<>();
 		Player bestPlayer = null;
 		long bestScore = 0;

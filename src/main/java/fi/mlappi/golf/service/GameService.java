@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Game;
 import fi.mlappi.golf.model.Hole;
+import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.repository.CourseRepository;
 import fi.mlappi.golf.repository.GameRepository;
 import fi.mlappi.golf.repository.HoleRepository;
+import fi.mlappi.golf.repository.RoundRepository;
 
 @Service("GameService")
 public class GameService {
@@ -22,12 +24,15 @@ public class GameService {
 	GameRepository gameRepository;
 	CourseRepository courseRepository;
 	HoleRepository holeRepository;
+	RoundRepository roundRepository;
 
 	@Autowired
-	public GameService(GameRepository gameRepository, CourseRepository courseRepository, HoleRepository holeRepository) {
+	public GameService(GameRepository gameRepository, CourseRepository courseRepository,
+			HoleRepository holeRepository, RoundRepository roundRepository) {
 		this.gameRepository = gameRepository;
 		this.courseRepository = courseRepository;
-		this.holeRepository = holeRepository;		
+		this.holeRepository = holeRepository;
+		this.roundRepository = roundRepository;	
 	}
 
 	public List<Game> getAllGames() {
@@ -47,18 +52,31 @@ public class GameService {
 		return gameRepository.findByNameContainingIgnoreCase(name);
 	}
 
+	public Round findRound(long id) {
+		return roundRepository.findOne(id);
+	}
+
 	public Game find(long id) {
 		return gameRepository.findOne(id);
 	}
 
 	public long save(Game game) {
-		if(game.getCourse() == null) {
-			game.setCourse(getMuurame());
-		}
 		return gameRepository.save(game).getId();
 	}
 
-	private Course getMuurame() {
+	public Round save(Round round) {
+		return roundRepository.save(round);
+	}
+
+	public void removeRound(long id) {
+		Round r = roundRepository.findOne(id);
+		Game g = r.getGame();
+		g.getRound().remove(r);				
+		roundRepository.delete(id);
+		gameRepository.save(g);
+	}
+
+	public Course getMuurame() {
 		if(courseRepository.count() == 0) {
 			Course c = new Course();
 			c.setName("Muurame Golf");

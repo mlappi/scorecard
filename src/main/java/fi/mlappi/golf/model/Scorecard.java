@@ -27,7 +27,7 @@ public class Scorecard {
 	@SequenceGenerator(name = "sequence", allocationSize = 10)
     private Long id;
     @OneToOne(fetch=FetchType.EAGER)
-    private Game game;
+    private Round round;
     @OneToOne(fetch=FetchType.EAGER)
     private Player player;
     private Integer hole1;

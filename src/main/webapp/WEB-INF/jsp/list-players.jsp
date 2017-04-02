@@ -1,6 +1,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
     <head>
+    	<title>Golf Score App</title>
         <link rel="stylesheet" href="../../css/bootstrap.min.css">  
         <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script> 		
         <script src="../../js/bootstrap.min.js"></script>       
@@ -9,15 +10,16 @@
     <body>          
         <div class="container">
 	    <ul class="nav nav-tabs">
+	    	<li><a href="/" class="glyphicon glyphicon-home">  Home</a></li>
 	    	<li class="active"><a href="#"><span class="glyphicon glyphicon-user">  Players</span></a></li>
-	        <li><a href="/game">Games</a></li>	        
+	        <li><a href="/game"><span class="glyphicon glyphicon-list-alt">  Games</span></a></li>	        
 	    </ul> 
 	    <br></br>
             <!--Search Form -->
             <form action="/player/search" method="post" id="seachPlayerForm" role="form">
                 <div class="form-group col-xs-5">
-                    <input type="text" name="playerName" id="playerName" class="form-control" required="true" 
-                    	placeholder="Type first name or last name of the player"/>                    
+                    <input type="text" name="playerName" id="playerName" class="form-control" 
+                    	placeholder="Type first name or last name"/>                    
                 </div>
                 <button type="submit" class="btn btn-info">
                     <span class="glyphicon glyphicon-search"></span> Search

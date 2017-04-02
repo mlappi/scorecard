@@ -1,5 +1,8 @@
 package fi.mlappi.golf.controller;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fi.mlappi.golf.model.Game;
+import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.model.Scorecard;
 import fi.mlappi.golf.service.GameService;
 import fi.mlappi.golf.service.PlayerService;
@@ -30,33 +34,55 @@ public class ScorecardController {
 	@Autowired
 	PlayerService playerService;
 
-	@RequestMapping("/score/new")
-	public String add(ModelMap model) {
-		log.debug("add a new score");
+	@RequestMapping("/score/add/{id}")
+	public String add(ModelMap model, @PathVariable("id") long id) {
+		log.debug("add a new score. round:" +id);
 		Scorecard s = new Scorecard();
-		s.setGame(gameService.getAllGames().get(0));
+		s.setRound(gameService.findRound(id));
+		
+		//TODO:
 		s.setPlayer(playerService.getAllPlayers().get(0));
+		
+		addModelValues(model, s);
+		
+		return "new-scorecard";
+	}
+
+	private void addModelValues(ModelMap model, Scorecard s) {
 		model.addAttribute("score", s);
 		model.addAttribute("playerId", s.getPlayer().getId());
-		model.addAttribute("gameId", s.getGame().getId());
-		return "new-scorecard";
+		model.addAttribute("gameId", s.getRound().getGame().getId());
+		model.addAttribute("roundId", s.getRound().getId());
 	}
 
 	@RequestMapping(value = "/score/edit/{id}")
 	public String edit(ModelMap model, @PathVariable("id") long id) {
 		log.debug("edit score " + id);
 		Scorecard s = scoreService.find(id);
-		model.addAttribute("score", s);
-		model.addAttribute("playerId", s.getPlayer().getId());
-		model.addAttribute("gameId", s.getGame().getId());
+		addModelValues(model, s);
+		
 		return "new-scorecard";
 	}
 
-	@RequestMapping(value = "/score/list/{id}")
-	public String scoreList(ModelMap model, @PathVariable("id") long id) {
-		log.debug("scoreList " + id);
-		model.addAttribute("game", gameService.find(id));
-		model.addAttribute("scoreList", scoreService.findByGameId(id));
+	@RequestMapping(value = "/score/list/{gameId}")
+	public String scoreList(ModelMap model, @PathVariable("gameId") long gameId, @ModelAttribute("round") RoundSelect roundSelect) {
+		log.debug("scoreList game id  " + gameId);
+		log.debug("round " + roundSelect);
+		Game game = gameService.find(gameId);		
+		Map<Long,String> roundList = new LinkedHashMap<Long,String>();
+		int i = 0;
+		for(Round r : game.getRound()) {	
+			if(i == 0 && roundSelect.getRoundId() == 0) {
+				roundSelect.setRoundId(r.getId());
+			}
+			roundList.put(r.getId(), r.getName() + " | "+r.getCourseName());
+			i++;
+		}
+		model.addAttribute("game", game);
+		model.addAttribute("scoreList", scoreService.findByRoundId(roundSelect.getRoundId()));
+		model.addAttribute("roundList", roundList);		
+		model.addAttribute("round", roundSelect);
+		//model.addAttribute("selectedRoundId", round.getRoundId());
 		return "list-scores";
 	}
 
@@ -64,22 +90,26 @@ public class ScorecardController {
 	public String remove(ModelMap model, @PathVariable("id") long id) {
 		log.debug("remove game " + id);
 		Scorecard s = scoreService.find(id);
-		Game game = s.getGame();
+		Round round = s.getRound();
 		scoreService.delete(id);
 		model.put("message", "The scorecard removed.");
-		return scoreList(model, game.getId());
+		RoundSelect rs = new RoundSelect();
+		rs.setRoundId(round.getId());
+		return "redirect:/score/list/"+round.getGame().getId();
 	}
 
 	@RequestMapping(value = "/score/save", method = RequestMethod.POST)
 	public String save(ModelMap model, @ModelAttribute("score") @Valid Scorecard score,
 			@RequestParam("gameId") Long gameId,
+			@RequestParam("roundId") Long roundId,
 			@RequestParam("playerId") Long playerId,
 			BindingResult result) {
 		log.debug("save: " + score.toString());
 		log.debug("game: " + gameId);
 		log.debug("player: " + playerId);
+		log.debug("round: " + roundId);
 				
-		score.setGame(gameService.find(gameId));
+		score.setRound(gameService.findRound(roundId));
 		score.setPlayer(playerService.find(playerId));
 		boolean newScorecard = score.getId() == null ? true : false;
 		if (!result.hasErrors()) {
@@ -93,7 +123,10 @@ public class ScorecardController {
 			log.warn("jotain väärin... " + result.getFieldError());
 			return "new-scorecard";
 		}
-		return scoreList(model, gameId);
+		RoundSelect rs = new RoundSelect();
+		rs.setRoundId(roundId);
+
+		return "redirect:/score/list/"+gameId;
 	}
 
 }

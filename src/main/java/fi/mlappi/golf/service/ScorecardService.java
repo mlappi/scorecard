@@ -28,8 +28,8 @@ public class ScorecardService {
 
     }
     
-    public List<Scorecard> findByGameId(Long gameId)  {
-    	return scorecardRepository.findByGameId(gameId);
+    public List<Scorecard> findByRoundId(Long roundId)  {
+    	return scorecardRepository.findByRoundId(roundId);
     }   
 
     public Scorecard find(long id)  {

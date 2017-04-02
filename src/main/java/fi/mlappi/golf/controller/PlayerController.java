@@ -25,7 +25,12 @@ public class PlayerController {
 	@Autowired
 	PlayerService playerService;
 
-	@RequestMapping({"/", "/player"})
+	@RequestMapping({"/"})
+	public String home(ModelMap model) {
+		return "index";
+	}
+
+	@RequestMapping({"/player"})
 	public String players(ModelMap model) {
 		log.debug("get all players...");
 		List<Player> players = playerService.getAllPlayers();

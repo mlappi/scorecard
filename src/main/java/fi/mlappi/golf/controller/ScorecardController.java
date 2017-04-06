@@ -1,6 +1,7 @@
 package fi.mlappi.golf.controller;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fi.mlappi.golf.model.Game;
+import fi.mlappi.golf.model.Player;
 import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.model.Scorecard;
 import fi.mlappi.golf.service.GameService;
@@ -35,31 +37,35 @@ public class ScorecardController {
 	PlayerService playerService;
 
 	@RequestMapping("/score/add/{id}")
-	public String add(ModelMap model, @PathVariable("id") long id) {
-		log.debug("add a new score. round:" +id);
-		Scorecard s = new Scorecard();
-		s.setRound(gameService.findRound(id));
-		
-		//TODO:
-		s.setPlayer(playerService.getAllPlayers().get(0));
-		
-		addModelValues(model, s);
-		
+	public String add(ModelMap model, @PathVariable("id") long roundId) {
+		log.debug("add a new score. round:" +roundId);
+		Scorecard scorecard = new Scorecard();
+		scorecard.setRound(gameService.findRound(roundId));
+		addModelValues(model, scorecard);
+				
 		return "new-scorecard";
 	}
 
 	private void addModelValues(ModelMap model, Scorecard s) {
 		model.addAttribute("score", s);
-		model.addAttribute("playerId", s.getPlayer().getId());
+		if(s.getPlayer() != null)
+			model.addAttribute("playerId", s.getPlayer().getId());
 		model.addAttribute("gameId", s.getRound().getGame().getId());
 		model.addAttribute("roundId", s.getRound().getId());
+
+		Map<Long,String> playerList = new LinkedHashMap<Long,String>();
+		for(Player player : playerService.getAllPlayers()) {	
+			playerList.put(player.getId(), player.getFirstName() + " " + player.getLastName());
+		}		
+		model.addAttribute("playerList", playerList);		
+
 	}
 
 	@RequestMapping(value = "/score/edit/{id}")
 	public String edit(ModelMap model, @PathVariable("id") long id) {
 		log.debug("edit score " + id);
 		Scorecard s = scoreService.find(id);
-		addModelValues(model, s);
+		addModelValues(model, s);	
 		
 		return "new-scorecard";
 	}
@@ -78,11 +84,14 @@ public class ScorecardController {
 			roundList.put(r.getId(), r.getName() + " | "+r.getCourseName());
 			i++;
 		}
+		
+		List<Scorecard> scores = scoreService.findByRoundId(roundSelect.getRoundId());
+		scores.sort((Scorecard s1, Scorecard s2) -> Double.valueOf(s2.getWin()).compareTo(Double.valueOf(s1.getWin())));
 		model.addAttribute("game", game);
-		model.addAttribute("scoreList", scoreService.findByRoundId(roundSelect.getRoundId()));
+		model.addAttribute("scoreList", scores);
 		model.addAttribute("roundList", roundList);		
 		model.addAttribute("round", roundSelect);
-		//model.addAttribute("selectedRoundId", round.getRoundId());
+		
 		return "list-scores";
 	}
 
@@ -100,17 +109,17 @@ public class ScorecardController {
 
 	@RequestMapping(value = "/score/save", method = RequestMethod.POST)
 	public String save(ModelMap model, @ModelAttribute("score") @Valid Scorecard score,
-			@RequestParam("gameId") Long gameId,
+			@RequestParam("gameId") Long gameId, //			@RequestParam("playerId") Long playerId,
 			@RequestParam("roundId") Long roundId,
-			@RequestParam("playerId") Long playerId,
 			BindingResult result) {
 		log.debug("save: " + score.toString());
 		log.debug("game: " + gameId);
-		log.debug("player: " + playerId);
+		//log.debug("player: " + playerId);
 		log.debug("round: " + roundId);
 				
 		score.setRound(gameService.findRound(roundId));
-		score.setPlayer(playerService.find(playerId));
+		//score.setPlayer(playerService.find(playerId));
+		score.setPlayer(playerService.find(score.getPlayer().getId()));
 		boolean newScorecard = score.getId() == null ? true : false;
 		if (!result.hasErrors()) {
 			scoreService.save(score);
@@ -125,6 +134,8 @@ public class ScorecardController {
 		}
 		RoundSelect rs = new RoundSelect();
 		rs.setRoundId(roundId);
+		
+		scoreService.countWins(roundId);	
 
 		return "redirect:/score/list/"+gameId;
 	}

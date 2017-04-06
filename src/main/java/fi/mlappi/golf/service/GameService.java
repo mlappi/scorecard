@@ -46,9 +46,6 @@ public class GameService {
 	}
 
 	public List<Game> search(String name) {
-//		Comparator<Game> groupByComparator = Comparator.comparing(Game::getName);
-//		List<Game> result = gameList.stream().filter(e -> e.getName().equalsIgnoreCase(name)).sorted(groupByComparator)
-//				.collect(Collectors.toList());
 		return gameRepository.findByNameContainingIgnoreCase(name);
 	}
 

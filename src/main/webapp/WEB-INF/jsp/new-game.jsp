@@ -3,16 +3,17 @@
 <html>
     <head>
     	<title>Golf Score App</title>
-        <link rel="stylesheet" href="../../css/bootstrap.min.css">   		
-        <link rel="stylesheet" href="../../css/bootstrap-datetimepicker.min.css">
+        <link rel="stylesheet" href="../../../css/bootstrap.min.css">   		
+        <link rel="stylesheet" href="../../../css/bootstrap-datetimepicker.min.css">
         <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
-        <script src="../../js/bootstrap.min.js"></script>                
-        <script src="../../js/bootstrap-datetimepicker.min.js"></script>
+        <script src="../../../js/bootstrap.min.js"></script>                
+        <script src="../../../js/bootstrap-datetimepicker.min.js"></script>
     </head>
     <body>
         <div class="container">
 	    <ul class="nav nav-tabs">
 	    	<li><a href="/" class="glyphicon glyphicon-home">  Home</a></li>
+	    	<li><a href="/course"><span class="glyphicon glyphicon-flag">  Courses</span></a></li>
 	    	<li><a href="/player"><span class="glyphicon glyphicon-user">  Players</span></a></li>
 	        <li><a href="/game"><span class="glyphicon glyphicon-list-alt">  Games</span></a></li>	        
 	        <li class="active"><a href="#"><span class="glyphicon glyphicon-asterisk">  Game</span></a></li>
@@ -25,6 +26,11 @@
 	            <c:if test="${not empty message}">                
 	                <div class="alert alert-success">
 	                    ${message}
+	                </div>
+	            </c:if> 
+	            <c:if test="${not empty errormessage}">                
+	                <div class="alert alert-warning">
+	                    ${errormessage}
 	                </div>
 	            </c:if> 
                 

@@ -55,7 +55,13 @@ public class PlayerController {
 	@RequestMapping(value = "/player/remove/{id}")
 	public String remove(ModelMap model, @PathVariable("id") long id) {
 		log.debug("remove player " + id);
-		playerService.delete(id);
+		if(playerService.findScorecards(id).isEmpty()) {
+			playerService.delete(id);
+			model.put("message", "The player has been successfully removed.");
+		}
+		else {
+			model.put("errormessage", "The player has played some rounds. Remove all scorecards first.");
+		}
 		return players(model);
 	}
 

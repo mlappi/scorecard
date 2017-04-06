@@ -48,7 +48,6 @@ public class Scorecard {
     private Integer hole16;
     private Integer hole17;
     private Integer hole18;    
-    @Transient
     private double win;
     
     @Transient

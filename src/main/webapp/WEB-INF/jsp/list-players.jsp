@@ -11,6 +11,7 @@
         <div class="container">
 	    <ul class="nav nav-tabs">
 	    	<li><a href="/" class="glyphicon glyphicon-home">  Home</a></li>
+	    	<li><a href="/course"><span class="glyphicon glyphicon-flag">  Courses</span></a></li>
 	    	<li class="active"><a href="#"><span class="glyphicon glyphicon-user">  Players</span></a></li>
 	        <li><a href="/game"><span class="glyphicon glyphicon-list-alt">  Games</span></a></li>	        
 	    </ul> 
@@ -33,6 +34,12 @@
                     ${message}
                 </div>
             </c:if> 
+            <c:if test="${not empty errormessage}">                
+                <div class="alert alert-warning">
+                    ${errormessage}
+                </div>
+            </c:if> 
+            
             <form action="/player" method="post" id="playerForm" role="form" >              
                 <input type="hidden" id="idPlayer" name="idPlayer">
                 <c:choose>

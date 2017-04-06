@@ -44,7 +44,8 @@ public class GameController  {
 
 	@Autowired
 	GameService gameService;
-	ScorecardService scoreService = new ScorecardService();
+	@Autowired
+	ScorecardService scoreService;
 	
 	@RequestMapping("/game")
 	public String games(ModelMap model) {
@@ -73,7 +74,7 @@ public class GameController  {
 		round.setBet(0d);
 		round.setDate(new Date());
 		round.setName("");
-		//TODO: kenttäeditori
+		//TODO: kenttä options list
 		round.setCourse(gameService.getMuurame());				
 		game.getRound().add(round);
 		
@@ -87,13 +88,24 @@ public class GameController  {
 		log.debug("edit game " + id);
 		model.addAttribute("game", gameService.find(id));
 		return new ModelAndView("new-game");
-		//return new ModelAndView("redirect:/new-game");
 	}
 
 	@RequestMapping(value = "/game/remove/{id}")
 	public String remove(ModelMap model, @PathVariable("id") long id) {
-		log.debug("remove game " + id);
-		gameService.delete(id);
+		log.debug("remove game " + id);		
+		Game game = gameService.find(id);
+		boolean empty = true;
+		for(Round r : game.getRound()) {
+			if(!scoreService.findByRoundId(r.getId()).isEmpty()) {
+				empty = false;
+				break;
+			}
+		}
+		if(empty)
+			gameService.delete(id);
+		else
+			model.put("errormessage", "Can't remove game. Remove all scorecards first.");
+		
 		List<Game> games = gameService.getAllGames();
 		model.addAttribute("games", games);
 		return "list-games";
@@ -103,10 +115,17 @@ public class GameController  {
 	public String removeRound(ModelMap model, @PathVariable("gameId") long gameId, @PathVariable("id") long id) {
 		if(id > 0) {
 			log.debug("remove round " + id);
-			gameService.removeRound(id);
+			
+			if(scoreService.findByRoundId(id).isEmpty()) {			
+				gameService.removeRound(id);
+				model.put("message", "The round successfully removed.");
+			}
+			else {
+				model.put("errormessage", "Can't remove round. Remove all scorecards first.");
+			}
 		}
-		model.put("message", "The round successfully removed.");
-		return "redirect:/game/edit/"+gameId;
+		
+		return "new-game";
 	}
 
 	@RequestMapping(value = "/game/save", method = RequestMethod.POST)
@@ -118,7 +137,7 @@ public class GameController  {
 			for (Round round : game.getRound()) {
 				log.debug("save round");
 				round.setGame(game);
-				round.setCourse(gameService.getMuurame());
+				round.setCourse(gameService.getMuurame());//TODO: valintalista
 				gameService.save(round);				
 			}
 			gameService.save(game);
@@ -133,7 +152,7 @@ public class GameController  {
 				log.error(e.getDefaultMessage());
 			}
 		}
-		return "new-game";//games(model);
+		return "new-game";
 	}
 
 	@RequestMapping(value = "/game/search", method = RequestMethod.POST)
@@ -141,89 +160,6 @@ public class GameController  {
 		log.debug("search: " + name);
 		model.addAttribute("games", gameService.search(name));
 		return "list-games";
-	}
-
-	
-	//TODO: score service
-	private void searchGameAndScores(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		long idGame = Integer.valueOf(req.getParameter("idGame"));
-		Round game = null;
-		try {
-			//game = gameService.getGame(idGame);
-		} catch (Exception ex) {
-			
-		}
-		List<Scorecard> scores = scoreService.getAllScorecards();
-
-		double pot = game.getBet() * scores.size();
-		for (int i = 1; i < 19; i++) {
-			Set<Player> players = getPlayersForLowestScore(scores, i, game);
-			if (!players.isEmpty()) {
-				game.getWinMap().put(i, players);//
-			}
-		}
-
-		double holeValue = pot / game.getWinMap().size();
-
-		for (Scorecard scorecard : scores) {
-			try {
-				Player player = new Player(); //playerService.getPlayer(scorecard.getPlayerId());
-				double wins = 0;
-				Set<Integer> holeset = game.getWinMap().keySet();
-				for (Integer hole : holeset) {
-					if (game.getWinMap().get(hole).contains(player.getId())) {
-						wins = wins + (holeValue / game.getWinMap().get(hole).size());
-						scorecard.getWinners().add(hole);
-					}
-				}
-				if (wins > 0)
-					scorecard.setWin(BigDecimal.valueOf(wins).setScale(2, RoundingMode.FLOOR).doubleValue());
-				//scorecard.setPlayer(player.getName().substring(0, 1) + ". " + player.getLastName());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		scores.sort((Scorecard s1, Scorecard s2) -> Double.valueOf(s2.getWin()).compareTo(Double.valueOf(s1.getWin())));
-		req.setAttribute("game", game);
-		req.setAttribute("scoreList", scores);
-
-		String nextJSP = "/jsp/list-scores.jsp";
-		//RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(nextJSP);
-		//dispatcher.forward(req, resp);
-	}
-
-	private Set<Player> getPlayersForLowestScore(List<Scorecard> scores, int hole, Round game) {
-		Set<Player> players = new HashSet<>();
-		Player bestPlayer = null;
-		long bestScore = 0;
-		for (Scorecard scorecard : scores) {
-			if (bestScore == 0) {
-				bestPlayer = scorecard.getPlayer();
-				bestScore = scorecard.getScore(hole);
-				players.add(bestPlayer);
-			} else {
-				if (bestScore > scorecard.getScore(hole)) {
-					players.remove(bestPlayer);
-					bestPlayer = scorecard.getPlayer();
-					bestScore = scorecard.getScore(hole);
-					players.add(bestPlayer);
-				} else if (bestScore == scorecard.getScore(hole) && game.getPar(hole) <= bestScore) {					
-					players.remove(bestPlayer);
-					bestPlayer = null;
-				}
-				/*
-				 * Jenkkiskinisääntö, birkulla aina rahaa jos ei ilkkoja
-				 */
-				else if (bestScore == scorecard.getScore(hole) && game.getPar(hole) > bestScore) {
-					bestPlayer = null;
-					players.add(scorecard.getPlayer());
-				}
-			}
-		}
-		return players;
 	}
 
 }

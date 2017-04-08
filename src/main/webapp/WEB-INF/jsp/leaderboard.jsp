@@ -3,7 +3,7 @@
     <head>
     	<title>Golf Score App</title>
         <link rel="stylesheet" href="../../css/bootstrap.min.css">  
-        <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script> 		
+        <script src="../../js/jquery-3.1.1.min.js"></script> 		
         <script src="../../js/bootstrap.min.js"></script>       
     </head>
 

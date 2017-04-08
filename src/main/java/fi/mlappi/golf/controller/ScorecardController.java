@@ -61,8 +61,7 @@ public class ScorecardController {
 				if (total > 0) {
 					lbs.setThru(lbs.getThru() + 18);
 					lbs.setTotalAll(lbs.getTotalAll() + total);
-					// TODO: kentän par ja huomioi vain pelatut reiät
-					lbs.setTotal(lbs.getTotal() + (total - 72));
+					lbs.setTotal(lbs.getTotal() + (total - s.getRound().getCourse().getCountTotal()));
 				}				
 			}
 		}

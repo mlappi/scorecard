@@ -56,7 +56,6 @@ public class Game {
 	}
 
 	public Round getRound(long id) {
-		log.debug("game.round id: " + id);
 		if (round != null) {
 			for (Round r : round) {
 				if (r.getId() == id) {

@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import fi.mlappi.golf.model.Course;
+import fi.mlappi.golf.model.Hole;
+import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.service.CourseService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,8 +32,7 @@ public class CourseController  {
 	public String courses(ModelMap model) {
 		log.debug("get all courses");
 		List<Course> courses = courseService.getAllCourses();
-		model.addAttribute("courses", courses);
-		//model.put("message", model.get("message"));		
+		model.addAttribute("courses", courses);		
 		return "list-courses";
 	}
 
@@ -46,7 +47,8 @@ public class CourseController  {
 	@RequestMapping(value = "/course/edit/{id}")
 	public ModelAndView edit(ModelMap model, @PathVariable("id") long id) {
 		log.debug("edit course " + id);
-		model.addAttribute("course", courseService.find(id));	
+		Course course = courseService.find(id);		
+		model.addAttribute("course", course);	
 		
 		return new ModelAndView("new-course");
 	}
@@ -62,8 +64,16 @@ public class CourseController  {
 	@RequestMapping(value = "/course/save", method = RequestMethod.POST)
 	public String save(ModelMap model, @ModelAttribute("course") @Valid Course course, BindingResult result) {
 		log.debug("save: " + course.toString());
+		log.debug("holes " +course.getHole().size());
 		boolean newCourse = course.getId() == null ? true : false;
 		if (!result.hasErrors()) {
+			courseService.save(course);
+			for (Hole h : course.getHole()) {
+				log.debug("save hole");
+				h.setCourse(course);				
+				h = courseService.save(h);				
+			}
+			courseService.save(course);
 			if(newCourse)
 				model.put("message", "The new course has been successfully created.");				
 			else
@@ -75,6 +85,10 @@ public class CourseController  {
 				log.error(e.getDefaultMessage());
 			}
 		}
+		
+		List<Course> courses = courseService.getAllCourses();
+		model.addAttribute("courses", courses);		
+
 		return "list-courses";
 	}
 }

@@ -9,17 +9,16 @@ import org.springframework.stereotype.Service;
 import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Hole;
 import fi.mlappi.golf.repository.CourseRepository;
+import fi.mlappi.golf.repository.HoleRepository;
 
 @Service("CourseService")
 public class CourseService {
 	private static final int[] holes = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
 	
-	CourseRepository repository;
-
 	@Autowired
-	public CourseService(CourseRepository repository) {
-		this.repository = repository;
-	}
+	CourseRepository repository;
+	@Autowired
+	HoleRepository holeRepository;
     
 	public List<Course> getAllCourses() { 
     	List<Course> courses = new ArrayList<>();
@@ -45,6 +44,10 @@ public class CourseService {
 
     public Course save(Course course) {
     	return repository.save(course);
+    }
+
+    public Hole save(Hole hole) {
+    	return holeRepository.save(hole);
     }
 
 	public Course find(Long id) {

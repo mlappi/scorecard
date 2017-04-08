@@ -26,13 +26,13 @@ public class Course {
 	
 	@Id
 	@GeneratedValue(generator = "sequence", strategy = GenerationType.SEQUENCE)
-	@SequenceGenerator(name = "sequence", allocationSize = 20)
+	@SequenceGenerator(name = "sequence", allocationSize = 10)
 	private Long id;
     @NonNull
 	private String name;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @OrderBy("hole ASC")
+    @OrderBy(value="hole")
     private List<Hole> hole;
 
 	public Course() {
@@ -45,11 +45,29 @@ public class Course {
 	
 	public int getCountOut() {
 		int sum = 0;
+		for(Hole h : hole) {
+			if(h.getPar() == null ) {
+				return sum;
+			}
+			sum = sum + h.getPar();
+			if(h.getHole() == 9) {
+				break;
+			}
+		}
 		return sum;
 	}
 
 	public int getCountIn() {
-		int sum = 0;			
+		int sum = 0;
+		for(Hole h : hole) {
+			if(h.getPar() == null ) {
+				return sum;
+			}
+			if(h.getHole() < 10) {
+				continue;
+			}
+			sum = sum + h.getPar();
+		}		
 		return sum;
 	}
 

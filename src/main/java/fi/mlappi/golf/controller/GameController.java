@@ -1,20 +1,10 @@
 package fi.mlappi.golf.controller;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.Map;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +20,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Game;
-import fi.mlappi.golf.model.Player;
 import fi.mlappi.golf.model.Round;
-import fi.mlappi.golf.model.Scorecard;
+import fi.mlappi.golf.service.CourseService;
 import fi.mlappi.golf.service.GameService;
-import fi.mlappi.golf.service.PlayerService;
 import fi.mlappi.golf.service.ScorecardService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,6 +34,8 @@ public class GameController  {
 	GameService gameService;
 	@Autowired
 	ScorecardService scoreService;
+	@Autowired
+	CourseService courseService;
 	
 	@RequestMapping("/game")
 	public String games(ModelMap model) {
@@ -61,7 +51,7 @@ public class GameController  {
 		Game game = new Game();
 		game.setDate(new Date());
 		model.addAttribute("game", game);
-		
+		addCourseList(model);		
 		return "new-game";
 	}
 
@@ -73,20 +63,27 @@ public class GameController  {
 		Round round = new Round();
 		round.setBet(0d);
 		round.setDate(new Date());
-		round.setName("");
-		//TODO: kenttä options list
-		round.setCourse(gameService.getMuurame());				
-		game.getRound().add(round);
-		
+		round.setName("");				
+		game.getRound().add(round);		
 		model.addAttribute("game", game);
+		addCourseList(model);
 		
 		return "new-game";
+	}
+
+	private void addCourseList(ModelMap model) {
+		Map<Long,String> courseList = new LinkedHashMap<Long,String>();
+		for(Course c : courseService.getAllCourses()) {	
+			courseList.put(c.getId(), c.getName());
+		}		
+		model.addAttribute("courseList", courseList);
 	}
 
 	@RequestMapping(value = "/game/edit/{id}")
 	public ModelAndView edit(ModelMap model, @PathVariable("id") long id) {
 		log.debug("edit game " + id);
 		model.addAttribute("game", gameService.find(id));
+		addCourseList(model);
 		return new ModelAndView("new-game");
 	}
 
@@ -114,8 +111,7 @@ public class GameController  {
 	@RequestMapping(value = "/game/remove-round/{gameId}/{id}")
 	public String removeRound(ModelMap model, @PathVariable("gameId") long gameId, @PathVariable("id") long id) {
 		if(id > 0) {
-			log.debug("remove round " + id);
-			
+			log.debug("remove round " + id);			
 			if(scoreService.findByRoundId(id).isEmpty()) {			
 				gameService.removeRound(id);
 				model.put("message", "The round successfully removed.");
@@ -123,8 +119,7 @@ public class GameController  {
 			else {
 				model.put("errormessage", "Can't remove round. Remove all scorecards first.");
 			}
-		}
-		
+		}		
 		return "new-game";
 	}
 
@@ -137,7 +132,8 @@ public class GameController  {
 			for (Round round : game.getRound()) {
 				log.debug("save round");
 				round.setGame(game);
-				round.setCourse(gameService.getMuurame());//TODO: valintalista
+				Course c = courseService.find(round.getCourse().getId());
+				round.setCourse(c);
 				gameService.save(round);				
 			}
 			gameService.save(game);
@@ -152,6 +148,7 @@ public class GameController  {
 				log.error(e.getDefaultMessage());
 			}
 		}
+		addCourseList(model);
 		return "new-game";
 	}
 

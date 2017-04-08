@@ -59,7 +59,7 @@ public class ScorecardService {
     	scorecardRepository.delete(id);
     }
     
-	public void countWins(Long roundId) {		
+	public List<Scorecard> countWins(Long roundId) {		
 		List<Scorecard> scores = findByRoundId(roundId);
 		Round round = roundRepository.findOne(roundId);
 
@@ -87,6 +87,7 @@ public class ScorecardService {
 					scorecardRepository.save(scorecard);
 				}
 		}
+		return scores;
 	}
 
 	private Set<Player> getPlayersForLowestScore(List<Scorecard> scores, int hole, Round round) {

@@ -24,6 +24,7 @@ import org.springframework.format.annotation.NumberFormat.Style;
 
 import lombok.Data;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
@@ -31,6 +32,7 @@ import lombok.NonNull;
  */
 @Entity
 @Data
+@Slf4j
 public class Round {
 	
 	@Id
@@ -38,8 +40,7 @@ public class Round {
 	@SequenceGenerator(name = "sequence", allocationSize = 10)
 	private Long id;
     @NonNull
-	private String name;
-	private String courseName;    
+	private String name;	    
     @NonNull
     @Column(columnDefinition = "timestamptz")
     @Temporal(TemporalType.TIMESTAMP)
@@ -61,8 +62,11 @@ public class Round {
 	}
 
 	public long getPar(int hole) {
+		log.debug("get par for hole " +hole);
 		for(Hole h : course.getHole()) {
+			log.debug("hole " +h.getHole());
 			if(h.getHole() == hole) {
+				log.debug("hole " +h.getPar());
 				return h.getPar();
 			}		
 		}

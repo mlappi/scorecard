@@ -8,6 +8,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  *
@@ -19,10 +20,10 @@ public class Hole {
 	
 	@Id
 	@GeneratedValue(generator = "sequence", strategy = GenerationType.SEQUENCE)
-	@SequenceGenerator(name = "sequence", allocationSize = 10)
+	@SequenceGenerator(name = "sequence", allocationSize = 20)
 	private Long id;
 	private int hole;
-	private int par;
+	private Integer par;
 	private int hcp;
     @ManyToOne    
 	private Course course;

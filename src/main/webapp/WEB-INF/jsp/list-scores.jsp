@@ -7,7 +7,8 @@
     	<title>Golf Score App</title>
         <link rel="stylesheet" href="../../css/bootstrap.min.css">
         <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>   		
-        <script src="../../js/bootstrap.min.js"></script>               
+        <script src="../../js/bootstrap.min.js"></script>
+        <fmt:setLocale value="fi_FI" scope="session"/>                       
     </head>
 
     <body>          
@@ -131,7 +132,7 @@
                                     <td class="${score.isWinner(18) ? 'bg-danger text-danger' : ''}">${score.hole18}</td>
                                     <td>${score.countIn}</td>
                                     <td>${score.countTotal}</td>
-                                    <td>${score.win}</td>
+                                    <td><fmt:formatNumber value="${score.win}" type="currency" currencySymbol=""/></td>
                                     <td><a href="/score/remove/${score.id}" id="remove"> 
                                             <span class="glyphicon glyphicon-trash"></span>
                                         </a>                                                   
@@ -148,8 +149,11 @@
                     </c:otherwise>
                 </c:choose>                        
             </form>
-            <form action ="/score/add/${round.roundId}">            
+            <form action ="/score/leaderboard/${game.id}">            
                 <br></br>
+                <button type="submit" class="btn btn-primary  btn-md">Show leaderboard</button> 
+            </form>
+            <form action ="/score/add/${round.roundId}">            
                 <button type="submit" class="btn btn-primary  btn-md">New Scorecard</button> 
             </form>
         </div>

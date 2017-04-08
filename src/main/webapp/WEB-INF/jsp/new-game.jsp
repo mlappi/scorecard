@@ -1,5 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <html>
     <head>
     	<title>Golf Score App</title>
@@ -72,16 +73,18 @@
                          <tr class="${classSucess}">
                          	<input type="hidden" name="round[${loop2.index}].id" value="${round.id}">                         	                         
                             <td>${loop2.index +1}</td>                             
-                            <td><input type="text" name="round[${loop2.index}].courseName" class="form-control" value="${round.courseName}" required="true"/></td>                                   
+                            <td>
+								<form:select path="game.round[${loop2.index}].course.id" >
+								    <form:options items="${courseList}"/>
+								</form:select>                            
+                            </td>                                                               
                             <td><input type="text" name="round[${loop2.index}].name" class="form-control" value="${round.name}" required="true"/></td>
-<%--                             <td><input type="text" name="round[${loop2.index}].course.name" class="form-control" value="${round.course.name}" required="true"/></td> --%>
                             <td class="input-group date datetimepicker" id="datetimepicker">
 		                 		<input type='text' class="form-control" name="round[${loop2.index}].date" 
 		                 			value = "<fmt:formatDate value="${round.date}" pattern="dd.MM.yyyy HH:mm" />" readonly/>
 			                 	<span class="input-group-addon">
 			                    	<span class="glyphicon glyphicon-calendar"></span>
 		                 		</span>						                                                     
-<%--                                     <fmt:formatDate value="${round.date}" pattern="dd.MM.yyyy HH:mm"></fmt:formatDate> --%>
                                 </td>
                                 <td><input type="number" name="round[${loop2.index}].bet" step=".1" class="form-control bfh-number" value="${round.bet}" required="true" /></td>                                   
                                 <td>

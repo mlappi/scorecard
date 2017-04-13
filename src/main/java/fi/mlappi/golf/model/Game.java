@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -49,6 +50,7 @@ public class Game {
 	@NumberFormat(style = Style.CURRENCY)
 	private Double bet;
 	@OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OrderBy(value="date")
 	private List<Round> round;
 
 	public Game() {

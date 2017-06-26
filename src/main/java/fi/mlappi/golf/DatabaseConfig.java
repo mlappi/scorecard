@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 
-@Configuration
-@ServletComponentScan
+//@Configuration
+//@ServletComponentScan
 public class DatabaseConfig {
     @Bean
     @Primary

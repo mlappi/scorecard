@@ -42,7 +42,7 @@ public class Game {
 	@NonNull
 	private String name;
 	@NonNull
-	@Column(columnDefinition = "timestamptz")
+	//psql type: @Column(columnDefinition = "timestamptz")
 	@Temporal(TemporalType.TIMESTAMP)
 	@DateTimeFormat(pattern = "dd.MM.yyyy HH:mm")
 	private Date date;

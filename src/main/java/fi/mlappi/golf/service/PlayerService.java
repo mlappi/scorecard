@@ -38,11 +38,11 @@ public class PlayerService {
 	}
 
 	public Player find(Long id) {
-		return repository.findOne(id);
+		return repository.findById(id).orElse(null);
 	}
 
 	public void delete(Long id) {
-		repository.delete(id);
+		repository.deleteById(id);
 	}
 
 	public List<Player> search(String playerName) {

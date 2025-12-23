@@ -50,11 +50,11 @@ public class GameService {
 	}
 
 	public Round findRound(long id) {
-		return roundRepository.findOne(id);
+		return roundRepository.findById(id).orElse(null);
 	}
 
 	public Game find(long id) {
-		return gameRepository.findOne(id);
+		return gameRepository.findById(id).orElse(null);
 	}
 
 	public long save(Game game) {
@@ -66,10 +66,11 @@ public class GameService {
 	}
 
 	public void removeRound(long id) {
-		Round r = roundRepository.findOne(id);
+		Round r = roundRepository.findById(id).orElse(null);
+		if (r == null) return;
 		Game g = r.getGame();
 		g.getRound().remove(r);				
-		roundRepository.delete(id);
+		roundRepository.deleteById(id);
 		gameRepository.save(g);
 	}
 
@@ -94,6 +95,6 @@ public class GameService {
 	}
 
 	public void delete(long id) {
-		gameRepository.delete(id);
+		gameRepository.deleteById(id);
 	}
 }

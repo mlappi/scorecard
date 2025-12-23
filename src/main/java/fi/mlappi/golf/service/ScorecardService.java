@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,7 +47,7 @@ public class ScorecardService {
     }   
 
     public Scorecard find(long id)  {
-    	return scorecardRepository.findOne(id);
+		return scorecardRepository.findById(id).orElse(null);
     }   
 
     public Scorecard save(Scorecard s) {
@@ -56,12 +56,12 @@ public class ScorecardService {
 
 
     public void delete(long id) {
-    	scorecardRepository.delete(id);
+		scorecardRepository.deleteById(id);
     }
     
 	public List<Scorecard> countWins(Long roundId) {		
 		List<Scorecard> scores = findByRoundId(roundId);
-		Round round = roundRepository.findOne(roundId);
+		Round round = roundRepository.findById(roundId).orElse(null);
 
 		double pot = round.getBet() * scores.size();
 		for (int i = 1; i < 19; i++) {

@@ -51,11 +51,11 @@ public class CourseService {
     }
 
 	public Course find(Long id) {
-		return repository.findOne(id);
+		return repository.findById(id).orElse(null);
 	}
 
 	public void delete(Long id) {
-		repository.delete(id);
+		repository.deleteById(id);
 	}
 
 }

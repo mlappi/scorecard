@@ -17,7 +17,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Hole;
-import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.service.CourseService;
 import lombok.extern.slf4j.Slf4j;
 

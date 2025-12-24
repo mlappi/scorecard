@@ -15,6 +15,8 @@ import jakarta.persistence.SequenceGenerator;
 
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 /**
  *
@@ -31,9 +33,11 @@ public class Course {
     @NonNull
 	private String name;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @OrderBy(value="hole")
-    private List<Hole> hole;
+	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OrderBy(value="hole")
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private List<Hole> hole;
 
 	public Course() {
 		hole = new ArrayList<Hole>();

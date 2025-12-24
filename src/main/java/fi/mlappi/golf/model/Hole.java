@@ -9,6 +9,7 @@ import jakarta.persistence.SequenceGenerator;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  *
@@ -20,12 +21,14 @@ public class Hole {
 	
 	@Id
 	@GeneratedValue(generator = "sequence", strategy = GenerationType.SEQUENCE)
-	@SequenceGenerator(name = "sequence", allocationSize = 20)
+	@SequenceGenerator(name = "sequence", allocationSize = 10)
 	private Long id;
 	private int hole;
 	private Integer par;
 	private int hcp;
-    @ManyToOne    
+	@ManyToOne    
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
 	private Course course;
 
 	public Hole() {

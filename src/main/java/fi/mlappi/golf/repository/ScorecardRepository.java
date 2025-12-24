@@ -7,12 +7,15 @@ import org.springframework.stereotype.Repository;
 
 import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Scorecard;
+import java.util.Optional;
 
 @Repository
 public interface ScorecardRepository extends CrudRepository<Scorecard, Long> {
 	
 	public List<Scorecard> findByRoundId(Long roundId);
 	public List<Scorecard> findByPlayerId(Long playerId);
+
+	public Optional<Scorecard> findByRoundIdAndPlayerId(Long roundId, Long playerId);
 	
 	
 }

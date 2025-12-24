@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,9 +20,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.format.annotation.NumberFormat.Style;
 
-import fi.mlappi.golf.controller.ScorecardController;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -51,6 +51,8 @@ public class Game {
 	private Double bet;
 	@OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@OrderBy(value="date")
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
 	private List<Round> round;
 
 	public Game() {

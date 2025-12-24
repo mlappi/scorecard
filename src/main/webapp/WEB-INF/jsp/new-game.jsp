@@ -6,8 +6,8 @@
     	<title>Golf Score App</title>
         <link rel="stylesheet" href="../../../css/bootstrap.min.css">   		
         <link rel="stylesheet" href="../../../css/bootstrap-datetimepicker.min.css">
-        <script src="../../../js/jquery-3.1.1.min.js"></script>
-        <script src="../../../js/bootstrap.min.js"></script>                
+			<script src="/js/jquery-3.1.1.min.js"></script>
+			<script src="/js/bootstrap.min.js"></script>
         <script src="../../../js/bootstrap-datetimepicker.min.js"></script>
     </head>
     <body>
@@ -117,9 +117,9 @@
         		days: ["sunnuntai", "maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"],
         		daysShort: ["sun", "maa", "tii", "kes", "tor", "per", "lau", "sun"],
         		daysMin: ["su", "ma", "ti", "ke", "to", "pe", "la", "su"],
-        		months: ["tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu", "heinäkuu", "elokuu", "syyskuu", "lokakuu", "marraskuu", "joulukuu"],
+        		months: ["tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesï¿½kuu", "heinï¿½kuu", "elokuu", "syyskuu", "lokakuu", "marraskuu", "joulukuu"],
         		monthsShort: ["tam", "hel", "maa", "huh", "tou", "kes", "hei", "elo", "syy", "lok", "mar", "jou"],
-        		today: "tänään",
+        		today: "tï¿½nï¿½ï¿½n",
         		suffix: [],
         		meridiem: []
         	};

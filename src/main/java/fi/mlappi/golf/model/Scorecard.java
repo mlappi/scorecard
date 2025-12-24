@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,6 +21,7 @@ import lombok.Data;
  * @author mlappi
  */
 @Entity
+@Table(name = "SCORECARD", uniqueConstraints = @UniqueConstraint(columnNames = {"PLAYER_ID", "ROUND_ID"}))
 @Data
 public class Scorecard {
 

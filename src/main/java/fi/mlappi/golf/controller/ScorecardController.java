@@ -162,16 +162,27 @@ public class ScorecardController {
 	}
 
 	@RequestMapping(value = "/score/save", method = RequestMethod.POST)
-	public String save(ModelMap model, @ModelAttribute("score") @Valid Scorecard score,
-			@RequestParam("gameId") Long gameId, // @RequestParam("playerId")
-													// Long playerId,
-			@RequestParam("roundId") Long roundId, BindingResult result) {
+	    public String save(ModelMap model, @ModelAttribute("score") @Valid Scorecard score,
+		    @RequestParam("gameId") Long gameId,
+		    @RequestParam(value = "playerId", required = false) Long playerId,
+		    @RequestParam("roundId") Long roundId, BindingResult result) {
+		// Ensure related entities are set before logging/saving so service can detect existing records
+		score.setRound(gameService.findRound(roundId));
+		Long pid = playerId;
+		if (pid == null && score.getPlayer() != null) {
+			pid = score.getPlayer().getId();
+		}
+		if (pid != null) {
+			score.setPlayer(playerService.find(pid));
+		} else {
+			// Missing player -- return to form with an error
+			result.rejectValue("player", "player.required", "Player must be selected");
+			addModelValues(model, score);
+			return "new-scorecard";
+		}
 		log.debug("save: " + score.toString());
 		log.debug("game: " + gameId);
 		log.debug("round: " + roundId);
-
-		score.setRound(gameService.findRound(roundId));
-		score.setPlayer(playerService.find(score.getPlayer().getId()));
 		boolean newScorecard = score.getId() == null ? true : false;
 		if (!result.hasErrors()) {
 			scoreService.save(score);

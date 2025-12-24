@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -24,6 +23,8 @@ import org.springframework.format.annotation.NumberFormat.Style;
 
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -46,9 +47,13 @@ public class Round {
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern="dd.MM.yyyy HH:mm")
 	private Date date;
-    @OneToOne(fetch=FetchType.EAGER)
-    private Course course;
-    @ManyToOne
+	@OneToOne(fetch=FetchType.EAGER)
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private Course course;
+	@ManyToOne
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
 	private Game game;
     @NumberFormat(style = Style.CURRENCY)
 	private Double bet;

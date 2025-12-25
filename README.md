@@ -23,7 +23,13 @@ uncomment org.postgresql dependency from pom.xml
 
 comment org.hsqldb dependency from pom.xml
 
+# Linux/macOS
+export SPRING_PROFILES_ACTIVE=postgres
+mvn spring-boot:run
 
+# Windows PowerShell
+$env:SPRING_PROFILES_ACTIVE='postgres'
+mvn spring-boot:run
 
 
 

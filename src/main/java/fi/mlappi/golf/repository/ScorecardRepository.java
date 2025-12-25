@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Scorecard;
 import java.util.Optional;
 

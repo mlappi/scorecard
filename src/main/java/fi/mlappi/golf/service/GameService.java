@@ -3,7 +3,6 @@ package fi.mlappi.golf.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fi.mlappi.golf.model.Course;
@@ -26,7 +25,6 @@ public class GameService {
 	HoleRepository holeRepository;
 	RoundRepository roundRepository;
 
-	@Autowired
 	public GameService(GameRepository gameRepository, CourseRepository courseRepository,
 			HoleRepository holeRepository, RoundRepository roundRepository) {
 		this.gameRepository = gameRepository;

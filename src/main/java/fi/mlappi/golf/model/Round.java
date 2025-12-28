@@ -11,7 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -47,7 +47,7 @@ public class Round {
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern="dd.MM.yyyy HH:mm")
 	private Date date;
-	@OneToOne(fetch=FetchType.EAGER)
+	@ManyToOne(fetch=FetchType.EAGER)
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude
 	private Course course;

@@ -1,0 +1,74 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head('Golf Skins Games')"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="layout :: nav('home')"></header>
+<main class="container py-5">
+    <section class="hero-card">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-7">
+                <p class="eyebrow">Score fast. Play smooth.</p>
+                <h1 class="display-6">Jenkki-skinit ja usean kierroksen turnaukset.</h1>
+                <p class="lead text-muted">Lisää kenttiä, pelejä ja tuloksia mobile-ystävällisellä selainsovelluksella.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-brand" href="/game">Katso pelejä</a>
+                    <a class="btn btn-outline-dark" href="/course">Hallitse kenttiä</a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <h6>Kentät</h6>
+                        <p>Tallenna kenttien tuloskortit</p>
+                        <a href="/course" class="link-dark">Hallitse kenttiä</a>
+                    </div>
+                    <div class="stat-card">
+                        <h6>Pelaajat</h6>
+                        <p>Tallenna pelaajien tiedot</p>
+                        <a href="/player" class="link-dark">Hallitse pelaajia</a>
+                    </div>
+                    <div class="stat-card">
+                        <h6>Pelit</h6>
+                        <p>Luo pelejä ja tallenna tuloksia</p>
+                        <a href="/game" class="link-dark">Hallitse pelejä</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-5">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="info-card">
+                    <h5>Jenkki-skinin peritaatteet</h5>
+                    <p>Birdiellä saa aina rahaa, jos ei ole tehty esim. eagleä samalle väylälle.
+                        Birdie-väylien järjestyksellä ei ole väliä, koska jokainen birdie-väylä
+                        tuottaa saman osuuden kokonaispotista.                        
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card">
+                    <h5>Jenkki-skinin esimerkki</h5>
+                    <p>Pelaajia 20 (15€ jokaiselta), potti 300€. Birdieitä tehty 5:lle eri väylälle. Väylän arvo on 60€ (300/5).
+                       Useampi birdie samalle väylälle jakaa kyseisen väylän tuottaman osuuden.
+                       Esim. kolme birdieä samalle väylälle jakaa kyseisen väylän potin kolmeen osaan eli 20€ per birdie.
+                       Jos pelaaja on tehdyn yhden birdien yksin ja yhden jaetulle väylälle, hän saa yhteensä 80€ (60€ + 20€).
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card">
+                    <h5>Tuki monen kierroksen peleille</h5>
+                    <p>Panokset ja skinit kierroskohtaisesti. Usean kierroksen Leaderboard.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<footer th:replace="layout :: footer"></footer>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

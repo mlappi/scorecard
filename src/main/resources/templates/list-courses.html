@@ -1,0 +1,50 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head('Courses')"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="layout :: nav('courses')"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Kentät</h1>
+            <p class="text-muted">Tallenna kentän par-luvut.</p>
+        </div>
+        <a class="btn btn-brand" href="/course/new">Uusi kenttä</a>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+    <div class="card-surface">
+        <div th:if="${courses != null and !#lists.isEmpty(courses)}" class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nimi</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="course, iter : ${courses}">
+                        <td th:text="${iter.index + 1}"></td>
+                        <td>
+                            <a class="link-dark" th:href="@{/course/edit/{id}(id=${course.id})}" th:text="${course.name}"></a>
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/course/edit/{id}(id=${course.id})}">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" th:href="@{/course/remove/{id}(id=${course.id})}" onclick="return confirm('Poistetaanko kenttä?');">Remove</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${courses == null or #lists.isEmpty(courses)}" class="empty-state">
+            <p>Ei kenttiä</p>
+        </div>
+    </div>
+</main>
+<footer th:replace="layout :: footer"></footer>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

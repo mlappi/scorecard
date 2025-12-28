@@ -1,0 +1,145 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head('Scores')"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="layout :: nav('games')"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Tulokset</h1>
+            <p class="text-muted" th:text="${game != null ? game.name : ''}"></p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-accent" th:href="@{/score/leaderboard/{id}(id=${game.id})}">Leaderboard</a>
+    <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#import-form"
+            aria-expanded="false" aria-controls="import-form">Import</button>
+    <a class="btn btn-brand" th:href="@{/score/add/{id}(id=${round.roundId})}">Syötä tulos</a>
+    <a class="btn btn-outline-dark" href="/game">Takaisin</a>
+</div>            
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <p class="holes-hidden-note text-muted">Väyläkohtaiset tulokset piilotettu pystynäkymässä.</p>
+
+    <div class="collapse mt-3" id="import-form" th:if="${round != null}">
+        <div class="card-surface">
+            <form action="/score/import" method="post">
+                <input type="hidden" name="gameId" th:value="${game != null ? game.id : ''}">
+                <input type="hidden" name="roundId" th:value="${round.roundId}">
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label">Pelaaja (ilman tulosta)</label>
+                        <select class="form-select" name="playerId"
+                                th:disabled="${importPlayerList == null or #maps.isEmpty(importPlayerList)}" required>
+                            <option value="" disabled selected>Valitse pelaaja</option>
+                            <option th:each="entry : ${importPlayerList}" th:value="${entry.key}"
+                                    th:text="${entry.value}"></option>
+                        </select>
+                        <div class="form-text" th:if="${importPlayerList == null or #maps.isEmpty(importPlayerList)}">
+                            Kaikilla pelaajilla on jo tulos tälle kierrokselle.
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <label class="form-label">Tuloskortti (kopioi kentästä)</label>
+                        <textarea class="form-control" name="rawScores" rows="4" required
+                                  placeholder="4 4 3 4 3 7 5 3 4 37&#10;5 5 4 2 4 4 5 4 3 36&#10;73"></textarea>
+                        <div class="form-text">
+                            Syötä 18 tulosta tai 21 numeroa (OUT, IN, TOT mukana). Välit, rivinvaihdot ja tabit käyvät.
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-brand" type="submit"
+                            th:disabled="${importPlayerList == null or #maps.isEmpty(importPlayerList)}">Tuo</button>
+                    <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#import-form">Sulje</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form class="card-surface" action="#" method="post" th:object="${round}"
+          th:with="selectedRound=${game != null ? game.getRound(round.roundId) : null}">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label">Valitse kierros</label>
+                <select class="form-select" th:field="*{roundId}" onchange="this.form.submit()">
+                    <option th:each="entry : ${roundList}" th:value="${entry.key}" th:text="${entry.value}"></option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <div class="summary-line" th:if="${selectedRound != null}">
+                    <span th:text="${#dates.format(selectedRound.date, 'dd.MM.yyyy HH:mm')}"></span>
+                    <span th:text="${'Bet: ' + #numbers.formatDecimal(selectedRound.bet, 1, 2) + ' EUR'}"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive score-table mt-4" th:if="${scoreList != null and !#lists.isEmpty(scoreList)}">
+            <table class="table table-sm table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th class="text-nowrap">Pelaaja</th>
+                        <th th:each="i : ${#numbers.sequence(1,9)}" th:text="${i}"></th>
+                        <th>Out</th>
+                        <th th:each="i : ${#numbers.sequence(10,18)}" th:text="${i}"></th>
+                        <th>In</th>
+                        <th>TOT</th>
+                        <th>EUR</th>
+                    </tr>
+                    <tr class="text-muted small">
+                        <th></th>
+                        <th></th>
+                        <th th:each="i : ${#numbers.sequence(1,9)}" th:text="${selectedRound != null ? selectedRound.getPar(i) : ''}"></th>
+                        <th th:text="${selectedRound != null ? (selectedRound.getPar(1) + selectedRound.getPar(2) + selectedRound.getPar(3) + selectedRound.getPar(4) + selectedRound.getPar(5) + selectedRound.getPar(6) + selectedRound.getPar(7) + selectedRound.getPar(8) + selectedRound.getPar(9)) : ''}"></th>
+                        <th th:each="i : ${#numbers.sequence(10,18)}" th:text="${selectedRound != null ? selectedRound.getPar(i) : ''}"></th>
+                        <th th:text="${selectedRound != null ? (selectedRound.getPar(10) + selectedRound.getPar(11) + selectedRound.getPar(12) + selectedRound.getPar(13) + selectedRound.getPar(14) + selectedRound.getPar(15) + selectedRound.getPar(16) + selectedRound.getPar(17) + selectedRound.getPar(18)) : ''}"></th>
+                        <th th:text="${selectedRound != null ? (selectedRound.getPar(1) + selectedRound.getPar(2) + selectedRound.getPar(3) + selectedRound.getPar(4) + selectedRound.getPar(5) + selectedRound.getPar(6) + selectedRound.getPar(7) + selectedRound.getPar(8) + selectedRound.getPar(9) + selectedRound.getPar(10) + selectedRound.getPar(11) + selectedRound.getPar(12) + selectedRound.getPar(13) + selectedRound.getPar(14) + selectedRound.getPar(15) + selectedRound.getPar(16) + selectedRound.getPar(17) + selectedRound.getPar(18)) : ''}"></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="score, iter : ${scoreList}">
+                        <td th:text="${iter.index + 1}"></td>
+                        <td class="text-nowrap">
+                            <a class="link-dark" th:href="@{/score/edit/{id}(id=${score.id})}" th:text="${score.player.firstName.substring(0,1) + '. ' + score.player.lastName}"></a>
+                        </td>
+                        <td th:classappend="${score.isWinner(1) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole1 != null and score.hole1 lt selectedRound.getPar(1)) ? 'under-par' : '') + ((selectedRound != null and score.hole1 != null and score.hole1 le (selectedRound.getPar(1) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole1}"></span></td>
+                        <td th:classappend="${score.isWinner(2) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole2 != null and score.hole2 lt selectedRound.getPar(2)) ? 'under-par' : '') + ((selectedRound != null and score.hole2 != null and score.hole2 le (selectedRound.getPar(2) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole2}"></span></td>
+                        <td th:classappend="${score.isWinner(3) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole3 != null and score.hole3 lt selectedRound.getPar(3)) ? 'under-par' : '') + ((selectedRound != null and score.hole3 != null and score.hole3 le (selectedRound.getPar(3) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole3}"></span></td>
+                        <td th:classappend="${score.isWinner(4) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole4 != null and score.hole4 lt selectedRound.getPar(4)) ? 'under-par' : '') + ((selectedRound != null and score.hole4 != null and score.hole4 le (selectedRound.getPar(4) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole4}"></span></td>
+                        <td th:classappend="${score.isWinner(5) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole5 != null and score.hole5 lt selectedRound.getPar(5)) ? 'under-par' : '') + ((selectedRound != null and score.hole5 != null and score.hole5 le (selectedRound.getPar(5) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole5}"></span></td>
+                        <td th:classappend="${score.isWinner(6) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole6 != null and score.hole6 lt selectedRound.getPar(6)) ? 'under-par' : '') + ((selectedRound != null and score.hole6 != null and score.hole6 le (selectedRound.getPar(6) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole6}"></span></td>
+                        <td th:classappend="${score.isWinner(7) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole7 != null and score.hole7 lt selectedRound.getPar(7)) ? 'under-par' : '') + ((selectedRound != null and score.hole7 != null and score.hole7 le (selectedRound.getPar(7) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole7}"></span></td>
+                        <td th:classappend="${score.isWinner(8) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole8 != null and score.hole8 lt selectedRound.getPar(8)) ? 'under-par' : '') + ((selectedRound != null and score.hole8 != null and score.hole8 le (selectedRound.getPar(8) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole8}"></span></td>
+                        <td th:classappend="${score.isWinner(9) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole9 != null and score.hole9 lt selectedRound.getPar(9)) ? 'under-par' : '') + ((selectedRound != null and score.hole9 != null and score.hole9 le (selectedRound.getPar(9) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole9}"></span></td>
+                        <td class="fw-semibold" th:text="${score.countOut}"></td>
+                        <td th:classappend="${score.isWinner(10) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole10 != null and score.hole10 lt selectedRound.getPar(10)) ? 'under-par' : '') + ((selectedRound != null and score.hole10 != null and score.hole10 le (selectedRound.getPar(10) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole10}"></span></td>
+                        <td th:classappend="${score.isWinner(11) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole11 != null and score.hole11 lt selectedRound.getPar(11)) ? 'under-par' : '') + ((selectedRound != null and score.hole11 != null and score.hole11 le (selectedRound.getPar(11) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole11}"></span></td>
+                        <td th:classappend="${score.isWinner(12) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole12 != null and score.hole12 lt selectedRound.getPar(12)) ? 'under-par' : '') + ((selectedRound != null and score.hole12 != null and score.hole12 le (selectedRound.getPar(12) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole12}"></span></td>
+                        <td th:classappend="${score.isWinner(13) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole13 != null and score.hole13 lt selectedRound.getPar(13)) ? 'under-par' : '') + ((selectedRound != null and score.hole13 != null and score.hole13 le (selectedRound.getPar(13) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole13}"></span></td>
+                        <td th:classappend="${score.isWinner(14) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole14 != null and score.hole14 lt selectedRound.getPar(14)) ? 'under-par' : '') + ((selectedRound != null and score.hole14 != null and score.hole14 le (selectedRound.getPar(14) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole14}"></span></td>
+                        <td th:classappend="${score.isWinner(15) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole15 != null and score.hole15 lt selectedRound.getPar(15)) ? 'under-par' : '') + ((selectedRound != null and score.hole15 != null and score.hole15 le (selectedRound.getPar(15) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole15}"></span></td>
+                        <td th:classappend="${score.isWinner(16) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole16 != null and score.hole16 lt selectedRound.getPar(16)) ? 'under-par' : '') + ((selectedRound != null and score.hole16 != null and score.hole16 le (selectedRound.getPar(16) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole16}"></span></td>
+                        <td th:classappend="${score.isWinner(17) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole17 != null and score.hole17 lt selectedRound.getPar(17)) ? 'under-par' : '') + ((selectedRound != null and score.hole17 != null and score.hole17 le (selectedRound.getPar(17) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole17}"></span></td>
+                        <td th:classappend="${score.isWinner(18) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole18 != null and score.hole18 lt selectedRound.getPar(18)) ? 'under-par' : '') + ((selectedRound != null and score.hole18 != null and score.hole18 le (selectedRound.getPar(18) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole18}"></span></td>
+                        <td class="fw-semibold" th:text="${score.countIn}"></td>
+                        <td class="fw-semibold" th:text="${score.countTotal}"></td>
+                        <td th:text="${#numbers.formatDecimal(score.win, 1, 2)}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${scoreList == null or #lists.isEmpty(scoreList)}" class="empty-state mt-4">
+            <p>No scorecards found for this round.</p>
+        </div>
+    </form>
+</main>
+<footer th:replace="layout :: footer"></footer>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

@@ -17,8 +17,6 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.NumberFormat;
-import org.springframework.format.annotation.NumberFormat.Style;
 
 import lombok.Data;
 import lombok.NonNull;
@@ -46,9 +44,6 @@ public class Game {
 	@Temporal(TemporalType.TIMESTAMP)
 	@DateTimeFormat(pattern = "dd.MM.yyyy HH:mm")
 	private Date date;
-	@NonNull
-	@NumberFormat(style = Style.CURRENCY)
-	private Double bet;
 	@OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@OrderBy(value="date")
 	@ToString.Exclude

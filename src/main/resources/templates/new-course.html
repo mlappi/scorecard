@@ -1,0 +1,128 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head('Course')"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="layout :: nav('courses')"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Course</h1>
+            <p class="text-muted">Set par values and totals.</p>
+        </div>
+        <a class="btn btn-outline-dark" href="/course">Back</a>
+    </div>
+
+    <div class="card-surface">
+        <form action="/course/save" method="post" th:object="${course}">
+            <input type="hidden" th:field="*{id}">
+
+            <div class="mb-4">
+                <label class="form-label" for="courseName">Name</label>
+                <input class="form-control" type="text" id="courseName" th:field="*{name}" required>
+            </div>
+
+            <div class="table-responsive score-grid">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th class="text-center">1</th>
+                            <th class="text-center">2</th>
+                            <th class="text-center">3</th>
+                            <th class="text-center">4</th>
+                            <th class="text-center">5</th>
+                            <th class="text-center">6</th>
+                            <th class="text-center">7</th>
+                            <th class="text-center">8</th>
+                            <th class="text-center">9</th>
+                            <th class="text-center">Out</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td th:each="hole, iter : ${course.hole}" th:if="${iter.index < 9}">
+                                <input type="hidden" th:field="*{hole[__${iter.index}__].id}">
+                                <input type="hidden" th:field="*{hole[__${iter.index}__].hole}">
+                                <input class="form-control text-center" type="number" min="1" max="7" th:field="*{hole[__${iter.index}__].par}" th:id="'out_hole' + ${iter.index + 1}" data-hole-section="out">
+                            </td>
+                            <td>
+                                <input class="form-control text-center" type="number" id="outSum" name="outSum" th:value="${course.countOut}" readonly>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th class="text-center">10</th>
+                            <th class="text-center">11</th>
+                            <th class="text-center">12</th>
+                            <th class="text-center">13</th>
+                            <th class="text-center">14</th>
+                            <th class="text-center">15</th>
+                            <th class="text-center">16</th>
+                            <th class="text-center">17</th>
+                            <th class="text-center">18</th>
+                            <th class="text-center">In</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td th:each="hole, iter : ${course.hole}" th:if="${iter.index >= 9}">
+                                <input type="hidden" th:field="*{hole[__${iter.index}__].id}">
+                                <input type="hidden" th:field="*{hole[__${iter.index}__].hole}">
+                                <input class="form-control text-center" type="number" min="1" max="7" th:field="*{hole[__${iter.index}__].par}" th:id="'in_hole' + ${iter.index + 1}" data-hole-section="in">
+                            </td>
+                            <td>
+                                <input class="form-control text-center" type="number" id="inSum" name="inSum" th:value="${course.countIn}" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="9" class="text-end fw-semibold">Total</td>
+                            <td>
+                                <input class="form-control text-center" type="number" id="total" name="total" th:value="${course.countTotal}" readonly>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-brand" type="submit">Save course</button>
+                <button class="btn btn-outline-dark" type="reset">Reset</button>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="layout :: footer"></footer>
+<div th:replace="layout :: scripts"></div>
+<script>
+    const outInputs = Array.from(document.querySelectorAll('[data-hole-section="out"]'));
+    const inInputs = Array.from(document.querySelectorAll('[data-hole-section="in"]'));
+
+    function sumInputs(inputs) {
+        return inputs.reduce((sum, input) => {
+            const value = parseInt(input.value, 10);
+            return sum + (Number.isFinite(value) ? value : 0);
+        }, 0);
+    }
+
+    function updateTotals() {
+        const outSum = sumInputs(outInputs);
+        const inSum = sumInputs(inInputs);
+        const total = outSum + inSum;
+        const outEl = document.getElementById('outSum');
+        const inEl = document.getElementById('inSum');
+        const totalEl = document.getElementById('total');
+        if (outEl) outEl.value = outSum;
+        if (inEl) inEl.value = inSum;
+        if (totalEl) totalEl.value = total;
+    }
+
+    [...outInputs, ...inInputs].forEach((input) => {
+        input.addEventListener('input', updateTotals);
+    });
+</script>
+</body>
+</html>

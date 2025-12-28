@@ -1,0 +1,317 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head('Scorecard')"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="layout :: nav('games')"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Tuloskortti</h1>
+            <p class="text-muted">Tallenna tulokset väyläkohtaisesti.</p>
+            <p class="text-muted" th:if="${game != null and round != null}"
+               th:text="${game.name + ' - ' + round.name}"></p>
+        </div>
+    </div>
+
+    <div class="card-surface">
+        <form action="/score/save" method="post" th:object="${score}">
+            <input type="hidden" th:field="*{id}">
+            <input type="hidden" name="gameId" th:value="${gameId}">
+            <input type="hidden" name="roundId" th:value="${roundId}">
+
+            <div class="mb-3" th:if="${score.player == null}">
+                <label class="form-label">Valitse ensin pelaaja</label>
+                <select class="form-select" th:field="*{player.id}">
+                    <option value="" disabled selected>Choose player</option>
+                    <option th:each="player : ${playerList}" th:value="${player.key}" th:text="${player.value}"></option>
+                </select>
+            </div>
+            <input type="hidden" th:if="${score.player != null}" th:field="*{player.id}">
+
+            <div class="score-grid score-grid-mobile">
+                <div class="score-caption" th:if="${score.player != null and score.player.firstName != null and score.player.lastName != null}"
+                     th:text="${score.player.firstName + ' ' + score.player.lastName + ' | ' + score.round.name + ' @ ' + score.round.course.name}"></div>
+
+                <div class="hole-block">
+                    <div class="hole-block-title">Etuysi</div>
+                    <div class="hole-grid hole-grid-front">
+                        <div class="hole-cell">
+                            <div class="hole-label">1</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(1) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole1}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">2</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(2) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole2}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">3</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(3) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole3}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">4</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(4) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole4}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">5</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(5) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole5}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">6</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(6) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole6}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">7</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(7) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole7}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">8</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(8) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole8}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">9</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(9) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole9}" data-hole-section="out" required>
+                        </div>
+                        <div class="hole-cell hole-summary">
+                            <div class="hole-label">OUT</div>
+                            <div class="hole-par" th:text="${score.round != null ? (score.round.getPar(1) + score.round.getPar(2) + score.round.getPar(3) + score.round.getPar(4) + score.round.getPar(5) + score.round.getPar(6) + score.round.getPar(7) + score.round.getPar(8) + score.round.getPar(9)) : ''}"></div>
+                            <input class="form-control text-center sum-input" type="number" data-sum="out" name="outSum" th:value="${score.countOut}" readonly tabindex="-1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hole-block">
+                    <div class="hole-block-title">Takaysi</div>
+                    <div class="hole-grid hole-grid-back">
+                        <div class="hole-cell">
+                            <div class="hole-label">10</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(10) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole10}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">11</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(11) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole11}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">12</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(12) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole12}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">13</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(13) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole13}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">14</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(14) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole14}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">15</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(15) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole15}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">16</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(16) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole16}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">17</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(17) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole17}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell">
+                            <div class="hole-label">18</div>
+                            <div class="hole-par" th:text="${score.round != null ? score.round.getPar(18) : ''}"></div>
+                            <input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole18}" data-hole-section="in" required>
+                        </div>
+                        <div class="hole-cell hole-summary">
+                            <div class="hole-label">IN</div>
+                            <div class="hole-par" th:text="${score.round != null ? (score.round.getPar(10) + score.round.getPar(11) + score.round.getPar(12) + score.round.getPar(13) + score.round.getPar(14) + score.round.getPar(15) + score.round.getPar(16) + score.round.getPar(17) + score.round.getPar(18)) : ''}"></div>
+                            <input class="form-control text-center sum-input" type="number" data-sum="in" name="inSum" th:value="${score.countIn}" readonly tabindex="-1">
+                        </div>
+                        <div class="hole-cell hole-summary">
+                            <div class="hole-label">TOT</div>
+                            <div class="hole-par" th:text="${score.round != null ? (score.round.getPar(1) + score.round.getPar(2) + score.round.getPar(3) + score.round.getPar(4) + score.round.getPar(5) + score.round.getPar(6) + score.round.getPar(7) + score.round.getPar(8) + score.round.getPar(9) + score.round.getPar(10) + score.round.getPar(11) + score.round.getPar(12) + score.round.getPar(13) + score.round.getPar(14) + score.round.getPar(15) + score.round.getPar(16) + score.round.getPar(17) + score.round.getPar(18)) : ''}"></div>
+                            <input class="form-control text-center sum-input" type="number" data-sum="total" name="total" th:value="${score.countTotal}" readonly tabindex="-1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive score-grid score-grid-desktop">
+                <table class="table table-bordered align-middle">
+                    <caption th:if="${score.player != null and score.player.firstName != null and score.player.lastName != null}"
+                             th:text="${score.player.firstName + ' ' + score.player.lastName + ' | ' + score.round.name + ' @ ' + score.round.course.name}"></caption>
+                    <thead>
+                        <tr>
+                            <th class="text-center">1</th>
+                            <th class="text-center">2</th>
+                            <th class="text-center">3</th>
+                            <th class="text-center">4</th>
+                            <th class="text-center">5</th>
+                            <th class="text-center">6</th>
+                            <th class="text-center">7</th>
+                            <th class="text-center">8</th>
+                            <th class="text-center">9</th>
+                            <th class="text-center">Out</th>
+                        </tr>
+                        <tr class="text-muted small">
+                            <th class="text-center" th:each="i : ${#numbers.sequence(1,9)}" th:text="${score.round != null ? score.round.getPar(i) : ''}"></th>
+                            <th th:text="${score.round != null ? (score.round.getPar(1) + score.round.getPar(2) + score.round.getPar(3) + score.round.getPar(4) + score.round.getPar(5) + score.round.getPar(6) + score.round.getPar(7) + score.round.getPar(8) + score.round.getPar(9)) : ''}"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole1}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole2}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole3}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole4}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole5}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole6}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole7}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole8}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole9}" data-hole-section="out" required></td>
+                            <td><input class="form-control text-center sum-input" type="number" data-sum="out" name="outSum" th:value="${score.countOut}" readonly tabindex="-1"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th class="text-center">10</th>
+                            <th class="text-center">11</th>
+                            <th class="text-center">12</th>
+                            <th class="text-center">13</th>
+                            <th class="text-center">14</th>
+                            <th class="text-center">15</th>
+                            <th class="text-center">16</th>
+                            <th class="text-center">17</th>
+                            <th class="text-center">18</th>
+                            <th class="text-center">In</th>
+                        </tr>
+                        <tr class="text-muted small">
+                            <th class="text-center" th:each="i : ${#numbers.sequence(10,18)}" th:text="${score.round != null ? score.round.getPar(i) : ''}"></th>
+                            <th th:text="${score.round != null ? (score.round.getPar(10) + score.round.getPar(11) + score.round.getPar(12) + score.round.getPar(13) + score.round.getPar(14) + score.round.getPar(15) + score.round.getPar(16) + score.round.getPar(17) + score.round.getPar(18)) : ''}"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole10}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole11}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole12}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole13}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole14}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole15}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole16}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole17}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center hole-input" type="number" min="1" th:field="*{hole18}" data-hole-section="in" required></td>
+                            <td><input class="form-control text-center sum-input" type="number" data-sum="in" name="inSum" th:value="${score.countIn}" readonly tabindex="-1"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="9" class="text-end fw-semibold">Total</td>
+                            <td><input class="form-control text-center sum-input" type="number" data-sum="total" name="total" th:value="${score.countTotal}" readonly tabindex="-1"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-brand" type="submit">Tallenna</button>
+                <button class="btn btn-outline-dark" type="reset">Palauta</button>
+                <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId}, roundId=${roundId})}">Takaisin</a>
+                <a class="btn btn-outline-danger" th:if="${score.id != null}" th:href="@{/score/remove/{id}(id=${score.id})}" onclick="return confirm('Remove this scorecard?');">Poista</a>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="layout :: footer"></footer>
+<div th:replace="layout :: scripts"></div>
+<script>
+    const outInputs = Array.from(document.querySelectorAll('[data-hole-section="out"]'));
+    const inInputs = Array.from(document.querySelectorAll('[data-hole-section="in"]'));
+    const holeInputs = Array.from(document.querySelectorAll('.hole-input'));
+    const outSums = Array.from(document.querySelectorAll('[data-sum="out"]'));
+    const inSums = Array.from(document.querySelectorAll('[data-sum="in"]'));
+    const totalSums = Array.from(document.querySelectorAll('[data-sum="total"]'));
+    const desktopGrid = document.querySelector('.score-grid-desktop');
+    const mobileGrid = document.querySelector('.score-grid-mobile');
+    const jumpDelayMs = 220;
+    function sumInputs(inputs) {
+        return inputs.reduce((sum, input) => {
+            const value = parseInt(input.value, 10);
+            return sum + (Number.isFinite(value) ? value : 0);
+        }, 0);
+    }
+
+    function updateTotals() {
+        const outSum = sumInputs(outInputs);
+        const inSum = sumInputs(inInputs);
+        const total = outSum + inSum;
+        outSums.forEach((el) => { el.value = outSum; });
+        inSums.forEach((el) => { el.value = inSum; });
+        totalSums.forEach((el) => { el.value = total; });
+    }
+
+    [...outInputs, ...inInputs].forEach((input) => {
+        input.addEventListener('input', updateTotals);
+    });
+
+    function setGridDisabled(grid, disabled) {
+        if (!grid) {
+            return;
+        }
+        grid.querySelectorAll('input, select, textarea').forEach((el) => {
+            if (!el.hasAttribute('data-allow-always')) {
+                el.disabled = disabled;
+            }
+        });
+    }
+
+    function syncGridMode() {
+        const isMobile = window.matchMedia('(max-width: 932px)').matches;
+        setGridDisabled(desktopGrid, isMobile);
+        setGridDisabled(mobileGrid, !isMobile);
+    }
+
+    window.addEventListener('resize', syncGridMode);
+    syncGridMode();
+
+    holeInputs.forEach((input, index) => {
+        let moveTimer = null;
+        input.addEventListener('keyup', (event) => {
+            const key = event.key;
+            if (key === 'Backspace' || key === 'Tab' || key === 'Shift' || key.startsWith('Arrow')) {
+                return;
+            }
+            clearTimeout(moveTimer);
+            moveTimer = setTimeout(() => {
+                const value = input.value.trim();
+                if (!value) {
+                    return;
+                }
+                const next = holeInputs[index + 1];
+                if (next) {
+                    next.focus();
+                    next.select();
+                }
+            }, jumpDelayMs);
+        });
+    });
+
+</script>
+</body>
+</html>

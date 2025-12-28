@@ -1,0 +1,58 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head('Games')"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="layout :: nav('games')"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Pelit</h1>
+            <p class="text-muted">Luo kierroksia ja siirry tulokortteihin.</p>
+        </div>
+        <a class="btn btn-brand" href="/game/new">Uusi peli</a>
+    </div>
+
+    <form class="search-row" action="/game/search" method="post">
+        <div class="input-group">
+            <input type="text" name="name" class="form-control" placeholder="Hae peleillä nimen perusteella">
+            <button class="btn btn-outline-dark" type="submit">Hae</button>
+        </div>
+    </form>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${errormessage}" class="alert alert-warning" th:text="${errormessage}"></div>
+
+    <div class="card-surface">
+        <div th:if="${games != null and !#lists.isEmpty(games)}" class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nimi</th>
+                        <th>Päivämäärä</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="game, iter : ${games}">
+                        <td th:text="${iter.index + 1}"></td>
+                        <td><a class="link-dark" th:href="@{/score/list/{id}(id=${game.id})}" th:text="${game.name}"></a></td>
+                        <td th:text="${#dates.format(game.date, 'dd.MM.yyyy HH:mm')}"></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/game/edit/{id}(id=${game.id})}">Muokkaa</a>
+                            <a class="btn btn-sm btn-outline-danger" th:href="@{/game/remove/{id}(id=${game.id})}" onclick="return confirm('Poistetaanko peli?');">Poista</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${games == null or #lists.isEmpty(games)}" class="empty-state">
+            <p>Ei pelejä.</p>
+        </div>
+    </div>
+</main>
+<footer th:replace="layout :: footer"></footer>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

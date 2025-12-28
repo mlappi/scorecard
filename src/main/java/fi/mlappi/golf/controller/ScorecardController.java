@@ -2,15 +2,20 @@ package fi.mlappi.golf.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,29 +51,40 @@ public class ScorecardController {
 		Game game = gameService.find(id);
 		for (Round r : game.getRound()) {
 			rounds.add(r.getId());
-			List<Scorecard> scorecards = scoreService.findByRoundId(r.getId());
+		}
+		Map<Long, Integer> roundIndex = new HashMap<>();
+		for (int i = 0; i < rounds.size(); i++) {
+			roundIndex.put(rounds.get(i), i);
+		}
+		for (Round r : game.getRound()) {
+			List<Scorecard> scorecards = scoreService.countWins(r.getId());
+			double bet = r.getBet() != null ? r.getBet() : 0d;
+			Integer index = roundIndex.get(r.getId());
 			for (Scorecard s : scorecards) {
-
 				if (!scoreMap.containsKey(s.getPlayer().getId())) {
 					LeaderboardScore lbs = new LeaderboardScore();
 					lbs.setName(s.getPlayer().getFirstName() + " " + s.getPlayer().getLastName());
+					for (int i = 0; i < rounds.size(); i++) {
+						lbs.getScore().add(0);
+					}
 					scoreMap.put(s.getPlayer().getId(), lbs);
 				}
 
 				LeaderboardScore lbs = scoreMap.get(s.getPlayer().getId());
 				int total = s.getCountTotal();
-				lbs.getScore().add(total);
+				if (index != null) {
+					lbs.getScore().set(index, total);
+				}
 				if (total > 0) {
 					lbs.setThru(lbs.getThru() + 18);
 					lbs.setTotalAll(lbs.getTotalAll() + total);
 					lbs.setTotal(lbs.getTotal() + (total - s.getRound().getCourse().getCountTotal()));
-				}				
+				}
+				lbs.setNetTotal(lbs.getNetTotal() + (s.getWin() - bet));
 			}
 		}
 
 		scoreList.addAll(scoreMap.values());
-		
-		fillScores(scoreList, rounds);
 		
 		scoreList.sort((LeaderboardScore s1, LeaderboardScore s2) -> Double.valueOf(s1.getTotalAll())
 				.compareTo(Double.valueOf(s2.getTotalAll())));
@@ -77,15 +93,6 @@ public class ScorecardController {
 		model.addAttribute("rounds", rounds);
 
 		return "leaderboard";
-	}
-
-	private void fillScores(List<LeaderboardScore> scoreList, List<Long> rounds) {
-		for(LeaderboardScore s : scoreList) {
-			if(s.getScore().size() < rounds.size()) {
-				s.getScore().add(0);
-				fillScores(scoreList, rounds);
-			}
-		}
 	}
 
 	@RequestMapping("/score/add/{id}")
@@ -104,12 +111,10 @@ public class ScorecardController {
 			model.addAttribute("playerId", s.getPlayer().getId());
 		model.addAttribute("gameId", s.getRound().getGame().getId());
 		model.addAttribute("roundId", s.getRound().getId());
+		model.addAttribute("game", s.getRound().getGame());
+		model.addAttribute("round", s.getRound());
 
-		Map<Long, String> playerList = new LinkedHashMap<Long, String>();
-		for (Player player : playerService.getAllPlayers()) {
-			playerList.put(player.getId(), player.getFirstName() + " " + player.getLastName());
-		}
-		model.addAttribute("playerList", playerList);
+		model.addAttribute("playerList", buildAvailablePlayers(s.getRound()));
 
 	}
 
@@ -145,6 +150,7 @@ public class ScorecardController {
 		model.addAttribute("scoreList", scores);
 		model.addAttribute("roundList", roundList);
 		model.addAttribute("round", roundSelect);
+		model.addAttribute("importPlayerList", buildAvailablePlayers(game.getRound(roundSelect.getRoundId())));
 
 		return "list-scores";
 	}
@@ -180,6 +186,13 @@ public class ScorecardController {
 			addModelValues(model, score);
 			return "new-scorecard";
 		}
+		for (int i = 1; i <= 18; i++) {
+			if (score.getScore(i) == null) {
+				result.reject("score.missing", "All holes must have a score before saving");
+				addModelValues(model, score);
+				return "new-scorecard";
+			}
+		}
 		log.debug("save: " + score.toString());
 		log.debug("game: " + gameId);
 		log.debug("round: " + roundId);
@@ -200,7 +213,153 @@ public class ScorecardController {
 
 		// scoreService.countWins(roundId);
 
-		return "redirect:/score/list/" + gameId;
+		return "redirect:/score/list/" + gameId + "?roundId=" + roundId;
+	}
+
+	@RequestMapping(value = "/score/import", method = RequestMethod.POST)
+	public String importScores(@RequestParam("gameId") Long gameId,
+			@RequestParam("roundId") Long roundId,
+			@RequestParam("playerId") Long playerId,
+			@RequestParam("rawScores") String rawScores,
+			RedirectAttributes redirectAttributes) {
+		if (gameId == null || roundId == null) {
+			redirectAttributes.addFlashAttribute("error", "Missing game or round selection.");
+			return "redirect:/score/list/" + (gameId != null ? gameId : "");
+		}
+		Round round = gameService.findRound(roundId);
+		if (round == null) {
+			redirectAttributes.addFlashAttribute("error", "Selected round not found.");
+			return "redirect:/score/list/" + gameId;
+		}
+		Map<Long, String> availablePlayers = buildAvailablePlayers(round);
+		if (playerId == null || !availablePlayers.containsKey(playerId)) {
+			redirectAttributes.addFlashAttribute("error",
+					"Select a player without existing scores for this round.");
+			return "redirect:/score/list/" + gameId;
+		}
+		List<Integer> numbers = parseScoreNumbers(rawScores);
+		if (numbers.size() != 18 && numbers.size() != 21) {
+			redirectAttributes.addFlashAttribute("error",
+					"Import format expects 18 scores or 21 numbers including OUT/IN/TOT checks.");
+			return "redirect:/score/list/" + gameId;
+		}
+		if (numbers.size() == 21) {
+			int outSum = numbers.get(9);
+			int inSum = numbers.get(19);
+			int totalSum = numbers.get(20);
+			int outCalc = sumRange(numbers, 0, 8);
+			int inCalc = sumRange(numbers, 10, 18);
+			if (outSum != outCalc || inSum != inCalc || totalSum != (outCalc + inCalc)) {
+				redirectAttributes.addFlashAttribute("error",
+						"Check sums do not match: OUT " + outCalc + ", IN " + inCalc + ", TOT " + (outCalc + inCalc));
+				return "redirect:/score/list/" + gameId;
+			}
+		}
+		Scorecard score = new Scorecard();
+		score.setRound(round);
+		score.setPlayer(playerService.find(playerId));
+		if (numbers.size() == 18) {
+			applyHoleScores(score, numbers);
+		} else {
+			applyHoleScoresWithChecks(score, numbers);
+		}
+		scoreService.save(score);
+		redirectAttributes.addFlashAttribute("message", "Scores imported for " + availablePlayers.get(playerId) + ".");
+		return "redirect:/score/list/" + gameId + "?roundId=" + roundId;
+	}
+
+	private Map<Long, String> buildAvailablePlayers(Round round) {
+		Map<Long, String> playerList = new LinkedHashMap<Long, String>();
+		if (round == null) {
+			return playerList;
+		}
+		List<Scorecard> existing = scoreService.findByRoundId(round.getId());
+		Set<Long> existingIds = new HashSet<>();
+		for (Scorecard scorecard : existing) {
+			if (scorecard.getPlayer() != null) {
+				existingIds.add(scorecard.getPlayer().getId());
+			}
+		}
+		List<Player> players = new ArrayList<>(playerService.getAllPlayers());
+		players.sort((p1, p2) -> {
+			String f1 = p1.getFirstName() == null ? "" : p1.getFirstName();
+			String f2 = p2.getFirstName() == null ? "" : p2.getFirstName();
+			int cmp = f1.compareToIgnoreCase(f2);
+			if (cmp != 0) {
+				return cmp;
+			}
+			String l1 = p1.getLastName() == null ? "" : p1.getLastName();
+			String l2 = p2.getLastName() == null ? "" : p2.getLastName();
+			return l1.compareToIgnoreCase(l2);
+		});
+		for (Player player : players) {
+			if (!existingIds.contains(player.getId())) {
+				playerList.put(player.getId(), player.getFirstName() + " " + player.getLastName());
+			}
+		}
+		return playerList;
+	}
+
+	private List<Integer> parseScoreNumbers(String rawScores) {
+		List<Integer> numbers = new ArrayList<>();
+		if (rawScores == null) {
+			return numbers;
+		}
+		Matcher matcher = Pattern.compile("\\d+").matcher(rawScores);
+		while (matcher.find()) {
+			numbers.add(Integer.parseInt(matcher.group()));
+		}
+		return numbers;
+	}
+
+	private int sumRange(List<Integer> values, int start, int end) {
+		int sum = 0;
+		for (int i = start; i <= end; i++) {
+			sum += values.get(i);
+		}
+		return sum;
+	}
+
+	private void applyHoleScores(Scorecard score, List<Integer> values) {
+		score.setHole1(values.get(0));
+		score.setHole2(values.get(1));
+		score.setHole3(values.get(2));
+		score.setHole4(values.get(3));
+		score.setHole5(values.get(4));
+		score.setHole6(values.get(5));
+		score.setHole7(values.get(6));
+		score.setHole8(values.get(7));
+		score.setHole9(values.get(8));
+		score.setHole10(values.get(9));
+		score.setHole11(values.get(10));
+		score.setHole12(values.get(11));
+		score.setHole13(values.get(12));
+		score.setHole14(values.get(13));
+		score.setHole15(values.get(14));
+		score.setHole16(values.get(15));
+		score.setHole17(values.get(16));
+		score.setHole18(values.get(17));
+	}
+
+	private void applyHoleScoresWithChecks(Scorecard score, List<Integer> values) {
+		score.setHole1(values.get(0));
+		score.setHole2(values.get(1));
+		score.setHole3(values.get(2));
+		score.setHole4(values.get(3));
+		score.setHole5(values.get(4));
+		score.setHole6(values.get(5));
+		score.setHole7(values.get(6));
+		score.setHole8(values.get(7));
+		score.setHole9(values.get(8));
+		score.setHole10(values.get(10));
+		score.setHole11(values.get(11));
+		score.setHole12(values.get(12));
+		score.setHole13(values.get(13));
+		score.setHole14(values.get(14));
+		score.setHole15(values.get(15));
+		score.setHole16(values.get(16));
+		score.setHole17(values.get(17));
+		score.setHole18(values.get(18));
 	}
 
 }

@@ -129,8 +129,14 @@ public class ScorecardService {
     }
     
 	public List<Scorecard> countWins(Long roundId) {		
+		if (roundId == null || roundId == 0) {
+			return new ArrayList<>();
+		}
 		List<Scorecard> scores = findByRoundId(roundId);
 		Round round = roundRepository.findById(roundId).orElse(null);
+		if (round == null || scores.isEmpty()) {
+			return scores;
+		}
 
 		double pot = round.getBet() * scores.size();
 		for (int i = 1; i < 19; i++) {
@@ -140,6 +146,9 @@ public class ScorecardService {
 			}
 		}
 
+		if (round.getWinMap().isEmpty()) {
+			return scores;
+		}
 		double holeValue = pot / round.getWinMap().size();
 
 		for (Scorecard scorecard : scores) {
@@ -164,24 +173,28 @@ public class ScorecardService {
 		Player bestPlayer = null;
 		long bestScore = 0;
 		for (Scorecard scorecard : scores) {
+			Integer score = scorecard.getScore(hole);
+			if (score == null) {
+				continue;
+			}
 			if (bestScore == 0) {
 				bestPlayer = scorecard.getPlayer();
-				bestScore = scorecard.getScore(hole);
+				bestScore = score;
 				players.add(bestPlayer);
 			} else {
-				if (bestScore > scorecard.getScore(hole)) {
+				if (bestScore > score) {
 					players.remove(bestPlayer);
 					bestPlayer = scorecard.getPlayer();
-					bestScore = scorecard.getScore(hole);
+					bestScore = score;
 					players.add(bestPlayer);
-				} else if (bestScore == scorecard.getScore(hole) && round.getPar(hole) <= bestScore) {					
+				} else if (bestScore == score && round.getPar(hole) <= bestScore) {					
 					players.remove(bestPlayer);
 					bestPlayer = null;
 				}
 				/*
 				 * Jenkkiskinisääntö, birkulla aina rahaa jos ei ilkkoja
 				 */
-				else if (bestScore == scorecard.getScore(hole) && round.getPar(hole) > bestScore) {
+				else if (bestScore == score && round.getPar(hole) > bestScore) {
 					bestPlayer = null;
 					players.add(scorecard.getPlayer());
 				}

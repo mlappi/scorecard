@@ -12,6 +12,7 @@ public class LeaderboardScore {
 	private int total;
 	private int totalAll;
 	private int thru;
+	private double netTotal;
 	private List<Integer> score = new ArrayList<>();
 	
 }

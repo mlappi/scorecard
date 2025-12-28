@@ -1,0 +1,49 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head('Leaderboard')"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="layout :: nav('games')"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Leaderboard</h1>
+            <p class="text-muted">Kierrostulokset ja tuotot</p>
+        </div>
+        <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
+    </div>
+
+    <div class="card-surface">
+        <div th:if="${scores != null and !#lists.isEmpty(scores)}" class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Pelaaja</th>
+                        <th th:each="r, iter : ${rounds}" th:text="'R' + ${iter.index + 1}"></th>
+                        <th>Yht.</th>
+                        <th>+/-</th>
+                        <th>€</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="score, iter : ${scores}">
+                        <td th:text="${iter.index + 1}"></td>
+                        <td th:text="${score.name}"></td>
+                        <td th:each="roundScore : ${score.score}" th:text="${roundScore}"></td>
+                        <td th:text="${score.totalAll}"></td>
+                        <td th:text="${score.total}"></td>
+                        <td th:text="${#numbers.formatDecimal(score.netTotal, 1, 2)}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${scores == null or #lists.isEmpty(scores)}" class="empty-state">
+            <p>Ei tuloksia vielä.</p>
+        </div>
+    </div>
+</main>
+<footer th:replace="layout :: footer"></footer>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

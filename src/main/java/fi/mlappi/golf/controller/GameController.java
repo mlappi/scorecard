@@ -1,4 +1,4 @@
-package fi.mlappi.golf.controller;
+﻿package fi.mlappi.golf.controller;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Game;
 import fi.mlappi.golf.model.Round;
@@ -109,18 +109,19 @@ public class GameController  {
 	}
 
 	@RequestMapping(value = "/game/remove-round/{gameId}/{id}")
-	public String removeRound(ModelMap model, @PathVariable("gameId") long gameId, @PathVariable("id") long id) {
-		if(id > 0) {
-			log.debug("remove round " + id);			
-			if(scoreService.findByRoundId(id).isEmpty()) {			
+	public String removeRound(ModelMap model, @PathVariable("gameId") long gameId, @PathVariable("id") long id,
+			RedirectAttributes redirectAttributes) {
+		if (id > 0) {
+			log.debug("remove round " + id);
+			if (scoreService.findByRoundId(id).isEmpty()) {
 				gameService.removeRound(id);
-				model.put("message", "Kierros on poistettu onnistuneesti.");
+				redirectAttributes.addFlashAttribute("message", "Kierros on poistettu onnistuneesti.");
+			} else {
+				redirectAttributes.addFlashAttribute("errormessage",
+						"Poistaaksesi kierroksen, poista ensin kaikki siihen liittyvät tuloskortit.");
 			}
-			else {
-				model.put("errormessage", "Poistaaksesi kierroksen, poista ensin kaikki siihen liittyvät tuloskortit.");
-			}
-		}		
-		return "new-game";
+		}
+		return "redirect:/game/edit/" + gameId;
 	}
 
 	@RequestMapping(value = "/game/save", method = RequestMethod.POST)

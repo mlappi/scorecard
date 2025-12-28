@@ -32,8 +32,8 @@
                             <a class="link-dark" th:href="@{/course/edit/{id}(id=${course.id})}" th:text="${course.name}"></a>
                         </td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/course/edit/{id}(id=${course.id})}">Edit</a>
-                            <a class="btn btn-sm btn-outline-danger" th:href="@{/course/remove/{id}(id=${course.id})}" onclick="return confirm('Poistetaanko kenttä?');">Remove</a>
+                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/course/edit/{id}(id=${course.id})}">Muokkaa</a>
+                            <a class="btn btn-sm btn-outline-danger" th:href="@{/course/remove/{id}(id=${course.id})}" onclick="return confirm('Poistetaanko kenttä?');">Poista</a>
                         </td>
                     </tr>
                 </tbody>

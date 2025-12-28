@@ -48,8 +48,10 @@
                     </thead>
                     <tbody>
                         <tr th:each="round, iter : ${game.round}">
-                            <input type="hidden" th:field="*{round[__${iter.index}__].id}">
-                            <td th:text="${iter.index + 1}"></td>
+                            <td>
+                                <input type="hidden" th:field="*{round[__${iter.index}__].id}">
+                                <span th:text="${iter.index + 1}"></span>
+                            </td>
                             <td>
                                 <select class="form-select" th:field="*{round[__${iter.index}__].course.id}">
                                     <option th:each="course : ${courseList}" th:value="${course.key}" th:text="${course.value}"></option>

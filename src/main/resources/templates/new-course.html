@@ -1,9 +1,9 @@
 ﻿<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="layout :: head('Course')"></head>
+<head th:replace="~{layout :: head('Course')}"></head>
 <body class="app-body">
 <div class="bg-glow"></div>
-<header th:replace="layout :: nav('courses')"></header>
+<header th:replace="~{layout :: nav('courses')}"></header>
 <main class="container py-4">
     <div class="page-header">
         <div>
@@ -95,8 +95,8 @@
         </form>
     </div>
 </main>
-<footer th:replace="layout :: footer"></footer>
-<div th:replace="layout :: scripts"></div>
+<footer th:replace="~{layout :: footer}"></footer>
+<div th:replace="~{layout :: scripts}"></div>
 <script>
     const outInputs = Array.from(document.querySelectorAll('[data-hole-section="out"]'));
     const inInputs = Array.from(document.querySelectorAll('[data-hole-section="in"]'));

@@ -1,9 +1,9 @@
 ﻿<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="layout :: head('Golf Skins Games')"></head>
+<head th:replace="~{layout :: head('Golf Skins Games')}"></head>
 <body class="app-body">
 <div class="bg-glow"></div>
-<header th:replace="layout :: nav('home')"></header>
+<header th:replace="~{layout :: nav('home')}"></header>
 <main class="container py-5">
     <section class="hero-card">
         <div class="row g-4 align-items-center">
@@ -61,14 +61,14 @@
             </div>
             <div class="col-md-4">
                 <div class="info-card">
-                    <h5>Tuki monen kierroksen peleille</h5>
-                    <p>Panokset ja skinit kierroskohtaisesti. Usean kierroksen Leaderboard.</p>
+                    <h5>Monen kierroksen turnaukset</h5>
+                    <p>Panokset ja skinit kierroskohtaisesti. Leaderboard näyttää koko turnauksen tuloslistan.</p>
                 </div>
             </div>
         </div>
     </section>
 </main>
-<footer th:replace="layout :: footer"></footer>
-<div th:replace="layout :: scripts"></div>
+<footer th:replace="~{layout :: footer}"></footer>
+<div th:replace="~{layout :: scripts}"></div>
 </body>
 </html>

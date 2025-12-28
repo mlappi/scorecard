@@ -1,9 +1,9 @@
 ﻿<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="layout :: head('Scores')"></head>
+<head th:replace="~{layout :: head('Scores')}"></head>
 <body class="app-body">
 <div class="bg-glow"></div>
-<header th:replace="layout :: nav('games')"></header>
+<header th:replace="~{layout :: nav('games')}"></header>
 <main class="container py-4">
     <div class="page-header">
         <div>
@@ -14,7 +14,7 @@
     <a class="btn btn-accent" th:href="@{/score/leaderboard/{id}(id=${game.id})}">Leaderboard</a>
     <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#import-form"
             aria-expanded="false" aria-controls="import-form">Import</button>
-    <a class="btn btn-brand" th:href="@{/score/add/{id}(id=${round.roundId})}">Syötä tulos</a>
+    <a class="btn btn-brand" th:href="@{/score/add/{id}(id=${round.roundId})}">Syötä tuloskortti</a>
     <a class="btn btn-outline-dark" href="/game">Takaisin</a>
 </div>            
     </div>
@@ -60,7 +60,7 @@
         </div>
     </div>
 
-    <form class="card-surface" action="#" method="post" th:object="${round}"
+    <form class="card-surface" th:action="@{/score/list/{gameId}(gameId=${game.id})}" method="get" th:object="${round}"
           th:with="selectedRound=${game != null ? game.getRound(round.roundId) : null}">
         <div class="row g-3 align-items-end">
             <div class="col-md-6">
@@ -139,7 +139,7 @@
         </div>
     </form>
 </main>
-<footer th:replace="layout :: footer"></footer>
-<div th:replace="layout :: scripts"></div>
+<footer th:replace="~{layout :: footer}"></footer>
+<div th:replace="~{layout :: scripts}"></div>
 </body>
 </html>

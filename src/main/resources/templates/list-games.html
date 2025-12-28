@@ -1,9 +1,9 @@
 ﻿<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="layout :: head('Games')"></head>
+<head th:replace="~{layout :: head('Games')}"></head>
 <body class="app-body">
 <div class="bg-glow"></div>
-<header th:replace="layout :: nav('games')"></header>
+<header th:replace="~{layout :: nav('games')}"></header>
 <main class="container py-4">
     <div class="page-header">
         <div>
@@ -52,7 +52,7 @@
         </div>
     </div>
 </main>
-<footer th:replace="layout :: footer"></footer>
-<div th:replace="layout :: scripts"></div>
+<footer th:replace="~{layout :: footer}"></footer>
+<div th:replace="~{layout :: scripts}"></div>
 </body>
 </html>

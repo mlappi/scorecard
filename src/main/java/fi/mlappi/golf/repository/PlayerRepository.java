@@ -12,5 +12,6 @@ public interface PlayerRepository extends CrudRepository<Player, Long> {
 	List<Player> findByLastNameIgnoreCase(String lastName);
 	List<Player> findByFirstNameIgnoreCase(String firstName);
 	List<Player> findByLastNameContainingOrFirstNameContainingAllIgnoreCase(String firstName, String lastName);
+	List<Player> findByFirstNameIgnoreCaseAndLastNameIgnoreCase(String firstName, String lastName);
 	
 }

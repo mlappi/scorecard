@@ -161,7 +161,7 @@ public class ScorecardController {
 		Scorecard s = scoreService.find(id);
 		Round round = s.getRound();
 		scoreService.delete(id);
-		model.put("message", "The scorecard removed.");
+		model.put("message", "Tuloskortti on poistettu onnistuneesti.");
 		RoundSelect rs = new RoundSelect();
 		rs.setRoundId(round.getId());
 		return "redirect:/score/list/" + round.getGame().getId();
@@ -182,13 +182,13 @@ public class ScorecardController {
 			score.setPlayer(playerService.find(pid));
 		} else {
 			// Missing player -- return to form with an error
-			result.rejectValue("player", "player.required", "Player must be selected");
+			result.rejectValue("player", "player.required", "Valitse pelaaja ennen tallennusta");
 			addModelValues(model, score);
 			return "new-scorecard";
 		}
 		for (int i = 1; i <= 18; i++) {
 			if (score.getScore(i) == null) {
-				result.reject("score.missing", "All holes must have a score before saving");
+				result.reject("score.missing", "Kaikki reiät tulee täyttää ennen tallennusta");
 				addModelValues(model, score);
 				return "new-scorecard";
 			}
@@ -200,9 +200,9 @@ public class ScorecardController {
 		if (!result.hasErrors()) {
 			scoreService.save(score);
 			if (newScorecard)
-				model.put("message", "The new scorecard has been successfully created.");
+				model.put("message", "Uusi tuloskortti on lisätty onnistuneesti.");
 			else
-				model.put("message", "The scorecard has been successfully updated.");
+				model.put("message", "Tuloskortti on päivitetty onnistuneesti.");
 			model.put("idScore", score.getId());
 		} else {
 			log.warn("jotain väärin... " + result.getFieldError());
@@ -223,24 +223,24 @@ public class ScorecardController {
 			@RequestParam("rawScores") String rawScores,
 			RedirectAttributes redirectAttributes) {
 		if (gameId == null || roundId == null) {
-			redirectAttributes.addFlashAttribute("error", "Missing game or round selection.");
+			redirectAttributes.addFlashAttribute("error", "peli ja kierros tulee valita.");
 			return "redirect:/score/list/" + (gameId != null ? gameId : "");
 		}
 		Round round = gameService.findRound(roundId);
 		if (round == null) {
-			redirectAttributes.addFlashAttribute("error", "Selected round not found.");
+			redirectAttributes.addFlashAttribute("error", "valittu kierros ei ole kelvollinen.");
 			return "redirect:/score/list/" + gameId;
 		}
 		Map<Long, String> availablePlayers = buildAvailablePlayers(round);
 		if (playerId == null || !availablePlayers.containsKey(playerId)) {
 			redirectAttributes.addFlashAttribute("error",
-					"Select a player without existing scores for this round.");
+					"Valittu pelaaja ei ole kelvollinen tai hänellä on jo tulos kortti tälle kierrokselle.");
 			return "redirect:/score/list/" + gameId;
 		}
 		List<Integer> numbers = parseScoreNumbers(rawScores);
 		if (numbers.size() != 18 && numbers.size() != 21) {
 			redirectAttributes.addFlashAttribute("error",
-					"Import format expects 18 scores or 21 numbers including OUT/IN/TOT checks.");
+					"Importoitavien tulosten määrä on virheellinen. Syötä joko 18 tai 21 lukua.");
 			return "redirect:/score/list/" + gameId;
 		}
 		if (numbers.size() == 21) {
@@ -251,7 +251,7 @@ public class ScorecardController {
 			int inCalc = sumRange(numbers, 10, 18);
 			if (outSum != outCalc || inSum != inCalc || totalSum != (outCalc + inCalc)) {
 				redirectAttributes.addFlashAttribute("error",
-						"Check sums do not match: OUT " + outCalc + ", IN " + inCalc + ", TOT " + (outCalc + inCalc));
+						"Etu- tai takysin summa ei täsmää: OUT " + outCalc + ", IN " + inCalc + ", TOT " + (outCalc + inCalc));
 				return "redirect:/score/list/" + gameId;
 			}
 		}
@@ -264,7 +264,7 @@ public class ScorecardController {
 			applyHoleScoresWithChecks(score, numbers);
 		}
 		scoreService.save(score);
-		redirectAttributes.addFlashAttribute("message", "Scores imported for " + availablePlayers.get(playerId) + ".");
+		redirectAttributes.addFlashAttribute("message", "Tulokset tallennettu pelaajalle " + availablePlayers.get(playerId) + ".");
 		return "redirect:/score/list/" + gameId + "?roundId=" + roundId;
 	}
 

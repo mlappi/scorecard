@@ -74,9 +74,9 @@ public class CourseController  {
 			}
 			courseService.save(course);
 			if(newCourse)
-				model.put("message", "The new course has been successfully created.");				
+				model.put("message", "Uusi kenttä on lisätty onnistuneesti.");				
 			else
-				model.put("message", "The course has been successfully updated.");
+				model.put("message", "Kenttä on päivitetty onnistuneesti.");
 			model.put("idCourse", course.getId());
 		}
 		else {

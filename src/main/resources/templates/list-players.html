@@ -10,7 +10,11 @@
             <h1>Pelaajat</h1>
             <p class="text-muted">Ylläpidä pelaajalistaa</p>
         </div>
-        <a class="btn btn-brand" href="/player/new">Uusi pelaaja</a>
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#import-players" aria-expanded="false" aria-controls="import-players">Tuo pelaajat</button>
+            <a class="btn btn-brand" href="/player/new">Uusi pelaaja</a>
+        </div>
     </div>
 
     <form class="search-row" action="/player/search" method="post">
@@ -22,6 +26,28 @@
 
     <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
     <div th:if="${errormessage}" class="alert alert-warning" th:text="${errormessage}"></div>
+
+    <div class="collapse mt-3" id="import-players">
+        <div class="card-surface">
+            <form action="/player/import" method="post">
+                <div class="row g-3">
+                    <div class="col-lg-8">
+                        <label class="form-label">Pelaajat (yksi per rivi)</label>
+                        <textarea class="form-control" name="playerList" rows="6" required
+                                  placeholder="Matti Meikäläinen&#10;Teemu Teurastaja&#10;Annika Sörsson"></textarea>
+                        <div class="form-text">
+                            Syötä etunimi ja sukunimi per rivi. HCP asetetaan 0 ja sähköpostia ei lisätä.
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-brand" type="submit">Tuo</button>
+                    <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#import-players">Sulje</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="card-surface">
         <div th:if="${players != null and !#lists.isEmpty(players)}" class="table-responsive">

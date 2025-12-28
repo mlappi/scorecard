@@ -10,7 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Transient;
 
@@ -29,9 +29,9 @@ public class Scorecard {
 	@GeneratedValue(generator = "sequence", strategy = GenerationType.SEQUENCE)
 	@SequenceGenerator(name = "sequence", allocationSize = 10)
     private Long id;
-    @OneToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.EAGER)
     private Round round;
-    @OneToOne(fetch=FetchType.EAGER)
+    @ManyToOne(fetch=FetchType.EAGER)
     private Player player;
     private Integer hole1;
     private Integer hole2;

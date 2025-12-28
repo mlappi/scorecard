@@ -49,4 +49,11 @@ public class PlayerService {
 		return repository.findByLastNameContainingOrFirstNameContainingAllIgnoreCase(playerName, playerName);		
 	}
 
+	public boolean existsByName(String firstName, String lastName) {
+		if (firstName == null || lastName == null) {
+			return false;
+		}
+		return !repository.findByFirstNameIgnoreCaseAndLastNameIgnoreCase(firstName, lastName).isEmpty();
+	}
+
 }

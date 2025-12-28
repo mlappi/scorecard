@@ -7,10 +7,10 @@
 <main class="container py-4">
     <div class="page-header">
         <div>
-            <h1>Course</h1>
-            <p class="text-muted">Set par values and totals.</p>
+            <h1>Kenttä</h1>
+            <p class="text-muted">Tallenna kentän par-luvut.</p>
         </div>
-        <a class="btn btn-outline-dark" href="/course">Back</a>
+        <a class="btn btn-outline-dark" href="/course">Takaisin</a>
     </div>
 
     <div class="card-surface">
@@ -18,7 +18,7 @@
             <input type="hidden" th:field="*{id}">
 
             <div class="mb-4">
-                <label class="form-label" for="courseName">Name</label>
+                <label class="form-label" for="courseName">Nimi</label>
                 <input class="form-control" type="text" id="courseName" th:field="*{name}" required>
             </div>
 
@@ -89,8 +89,8 @@
             </div>
 
             <div class="d-flex gap-2">
-                <button class="btn btn-brand" type="submit">Save course</button>
-                <button class="btn btn-outline-dark" type="reset">Reset</button>
+                <button class="btn btn-brand" type="submit">Tallenna kenttä</button>
+                <button class="btn btn-outline-dark" type="reset">Nollaa</button>
             </div>
         </form>
     </div>
@@ -100,6 +100,8 @@
 <script>
     const outInputs = Array.from(document.querySelectorAll('[data-hole-section="out"]'));
     const inInputs = Array.from(document.querySelectorAll('[data-hole-section="in"]'));
+    const holeInputs = [...outInputs, ...inInputs];
+    const jumpDelayMs = 220;
 
     function sumInputs(inputs) {
         return inputs.reduce((sum, input) => {
@@ -122,6 +124,28 @@
 
     [...outInputs, ...inInputs].forEach((input) => {
         input.addEventListener('input', updateTotals);
+    });
+
+    holeInputs.forEach((input, index) => {
+        let moveTimer = null;
+        input.addEventListener('keyup', (event) => {
+            const key = event.key;
+            if (key === 'Backspace' || key === 'Tab' || key === 'Shift' || key.startsWith('Arrow')) {
+                return;
+            }
+            clearTimeout(moveTimer);
+            moveTimer = setTimeout(() => {
+                const value = input.value.trim();
+                if (!value) {
+                    return;
+                }
+                const next = holeInputs[index + 1];
+                if (next) {
+                    next.focus();
+                    next.select();
+                }
+            }, jumpDelayMs);
+        });
     });
 </script>
 </body>

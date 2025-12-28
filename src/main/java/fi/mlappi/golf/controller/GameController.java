@@ -101,7 +101,7 @@ public class GameController  {
 		if(empty)
 			gameService.delete(id);
 		else
-			model.put("errormessage", "Can't remove game. Remove all scorecards first.");
+			model.put("errormessage", "Poistaaksesi pelin, poista ensin kaikki siihen liittyvät tuloskortit.");
 		
 		List<Game> games = gameService.getAllGames();
 		model.addAttribute("games", games);
@@ -114,10 +114,10 @@ public class GameController  {
 			log.debug("remove round " + id);			
 			if(scoreService.findByRoundId(id).isEmpty()) {			
 				gameService.removeRound(id);
-				model.put("message", "The round successfully removed.");
+				model.put("message", "Kierros on poistettu onnistuneesti.");
 			}
 			else {
-				model.put("errormessage", "Can't remove round. Remove all scorecards first.");
+				model.put("errormessage", "Poistaaksesi kierroksen, poista ensin kaikki siihen liittyvät tuloskortit.");
 			}
 		}		
 		return "new-game";
@@ -138,9 +138,9 @@ public class GameController  {
 			}
 			gameService.save(game);
 			if(newGame)
-				model.put("message", "The new game has been successfully created.");				
+				model.put("message", "Uusi peli on lisätty onnistuneesti.");				
 			else
-				model.put("message", "The game has been successfully updated.");
+				model.put("message", "Peli on päivitetty onnistuneesti.");
 			model.put("idGame", game.getId());
 		}
 		else {

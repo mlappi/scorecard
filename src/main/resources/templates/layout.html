@@ -24,15 +24,25 @@
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto">
-<li class="nav-item">
-                        <a class="nav-link" th:classappend="${active == 'home'} ? 'active' : ''" href="/">Info</a>
-                    </li> <li class="nav-item">
-                        <a class="nav-link" th:classappend="${active == 'games'} ? 'active' : ''" href="/game">Pelit</a>
-                    </li> <li class="nav-item">
-                        <a class="nav-link" th:classappend="${active == 'courses'} ? 'active' : ''" href="/course">Kentät</a>
-                    </li> <li class="nav-item">
-                        <a class="nav-link" th:classappend="${active == 'players'} ? 'active' : ''" href="/player">Pelaajat</a>
-                    </li></ul>
+    <li class="nav-item">
+        <a class="nav-link" th:classappend="${active == 'home'} ? 'active' : ''" href="/">Info</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" th:classappend="${active == 'games'} ? 'active' : ''" href="/game">Pelit</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" th:classappend="${active == 'courses'} ? 'active' : ''" href="/course">Kentät</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" th:classappend="${active == 'players'} ? 'active' : ''" href="/player">Pelaajat</a>
+    </li>
+    <li class="nav-item" th:if="${!isAdmin}">
+        <a class="nav-link" href="/admin/login">Kirjaudu</a>
+    </li>
+    <li class="nav-item" th:if="${isAdmin}">
+        <a class="nav-link" href="/admin/logout">Kirjaudu ulos</a>
+    </li>
+</ul>
             </div>
         </div>
     </nav>

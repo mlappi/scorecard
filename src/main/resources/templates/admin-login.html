@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Admin Login')}"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="~{layout :: nav('home')}"></header>
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card-surface">
+                <h1 class="h4 mb-3">Admin-kirjautuminen</h1>
+                <p class="text-muted mb-4">Kirjaudu sisään avataksesi muokkaustoiminnot.</p>
+
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <form action="/admin/login" method="post">
+                    <div class="mb-3">
+                        <label class="form-label" for="username">Käyttäjätunnus</label>
+                        <input class="form-control" type="text" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Salasana</label>
+                        <input class="form-control" type="password" id="password" name="password" required>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-brand" type="submit">Kirjaudu</button>
+                        <a class="btn btn-outline-dark" href="/">Takaisin</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{layout :: footer}"></footer>
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

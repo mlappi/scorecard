@@ -10,32 +10,33 @@
             <h1>Player</h1>
             <p class="text-muted">Lisää tai päivitä pelaajan tiedot.</p>
         </div>
-        <a class="btn btn-outline-dark" href="/player">Takaisin</a>
     </div>
 
     <div class="card-surface">
         <form action="/player/save" method="post" class="row g-3" th:with="p=${player} ?: ${editPlayer}">
             <input type="hidden" name="id" th:value="${p.id}">
-            <div class="col-md-6">
-                <label class="form-label" for="firstName">Etunimi</label>
-                <input class="form-control" type="text" id="firstName" name="firstName" th:value="${p.firstName}" required>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label" for="lastName">Sukunimi</label>
-                <input class="form-control" type="text" id="lastName" name="lastName" th:value="${p.lastName}" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="hcp">HCP</label>
-                <input class="form-control" type="number" step="0.1" id="hcp" name="hcp" th:value="${p.hcp}">
-            </div>
-            <div class="col-md-8">
-                <label class="form-label" for="email">Email</label>
-                <input class="form-control" type="email" id="email" name="email" th:value="${p.email}" placeholder="first.last@email.com">
-            </div>
-            <div class="col-12 d-flex gap-2">
-                <button class="btn btn-brand" type="submit">Tallenna</button>
-                <a class="btn btn-outline-dark" href="/player">Takaisin</a>
-            </div>
+            <fieldset class="row g-3" th:attr="disabled=${!isAdmin}">
+                <div class="col-md-6">
+                    <label class="form-label" for="firstName">Etunimi</label>
+                    <input class="form-control" type="text" id="firstName" name="firstName" th:value="${p.firstName}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="lastName">Sukunimi</label>
+                    <input class="form-control" type="text" id="lastName" name="lastName" th:value="${p.lastName}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="hcp">HCP</label>
+                    <input class="form-control" type="number" step="0.1" id="hcp" name="hcp" th:value="${p.hcp}">
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-control" type="email" id="email" name="email" th:value="${p.email}" placeholder="first.last@email.com">
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-brand" type="submit">Tallenna</button>
+                    <a class="btn btn-outline-dark" href="/player">Takaisin</a>
+                </div>
+            </fieldset>
         </form>
     </div>
 </main>

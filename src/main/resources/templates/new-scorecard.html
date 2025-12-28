@@ -20,6 +20,8 @@
             <input type="hidden" name="gameId" th:value="${gameId}">
             <input type="hidden" name="roundId" th:value="${roundId}">
 
+            <fieldset th:attr="disabled=${!isAdmin}">
+
             <div class="mb-3" th:if="${score.player == null}">
                 <label class="form-label">Valitse ensin pelaaja</label>
                 <select class="form-select" th:field="*{player.id}">
@@ -230,11 +232,16 @@
             </div>
 
             <div class="d-flex gap-2">
-                <button class="btn btn-brand" type="submit">Tallenna</button>
-                <button class="btn btn-outline-dark" type="reset">Palauta</button>
-                <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId}, roundId=${roundId})}">Takaisin</a>
-                <a class="btn btn-outline-danger" th:if="${score.id != null}" th:href="@{/score/remove/{id}(id=${score.id})}" onclick="return confirm('Remove this scorecard?');">Poista</a>
-            </div>
+    <button class="btn btn-brand" type="submit">Tallenna</button>
+    <button class="btn btn-outline-dark" type="reset">Palauta</button>
+    <a class="btn btn-outline-danger" th:if="${score.id != null and isAdmin}" th:href="@{/score/remove/{id}(id=${score.id})}" onclick="return confirm('Remove this scorecard?');">Poista</a>
+    <span class="btn btn-outline-danger disabled" th:if="${score.id != null and !isAdmin}" aria-disabled="true">Poista</span>
+</div>
+</fieldset>
+
+<div class="d-flex gap-2 mt-2">
+    <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId}, roundId=${roundId})}">Takaisin</a>
+</div>
         </form>
     </div>
 </main>

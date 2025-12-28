@@ -10,7 +10,8 @@
             <h1>Pelit</h1>
             <p class="text-muted">Lisää uusi peli tai muokka nykyistä.</p>
         </div>
-        <a class="btn btn-brand" href="/game/new">Uusi peli</a>
+        <a class="btn btn-brand" href="/game/new" th:if="${isAdmin}">Uusi peli</a>
+        <span class="btn btn-brand disabled" th:unless="${isAdmin}" aria-disabled="true">Uusi peli</span>
     </div>
 <!--
     <form class="search-row" action="/game/search" method="post">
@@ -41,8 +42,10 @@
                         <td><a class="link-dark" th:href="@{/score/list/{id}(id=${game.id})}" th:text="${game.name}"></a></td>
                         <td th:text="${#dates.format(game.date, 'dd.MM.yyyy HH:mm')}"></td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/game/edit/{id}(id=${game.id})}">Muokkaa</a>
-                            <a class="btn btn-sm btn-outline-danger" th:href="@{/game/remove/{id}(id=${game.id})}" onclick="return confirm('Poistetaanko peli?');">Poista</a>
+                            <a class="btn btn-sm btn-outline-secondary" th:if="${isAdmin}" th:href="@{/game/edit/{id}(id=${game.id})}">Muokkaa</a>
+                            <span class="btn btn-sm btn-outline-secondary disabled" th:unless="${isAdmin}" aria-disabled="true">Muokkaa</span>
+                            <a class="btn btn-sm btn-outline-danger" th:if="${isAdmin}" th:href="@{/game/remove/{id}(id=${game.id})}" onclick="return confirm('Poistetaanko peli?');">Poista</a>
+                            <span class="btn btn-sm btn-outline-danger disabled" th:unless="${isAdmin}" aria-disabled="true">Poista</span>
                         </td>
                     </tr>
                 </tbody>

@@ -7,7 +7,7 @@
 <main class="container py-4">
     <div class="page-header">
         <div>
-            <h1>Game</h1>
+            <h1>Peli</h1>
             <p class="text-muted">Muokkaa peliä tai lisää uusi kierros</p>
         </div>
     </div>
@@ -18,65 +18,71 @@
         <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
         <div th:if="${errormessage}" class="alert alert-warning" th:text="${errormessage}"></div>
 
-        <div class="row g-3">
-            <div class="col-md-7">
-                <label class="form-label" for="gameName">Nimi</label>
-                <input class="form-control" type="text" id="gameName" th:field="*{name}" required>
+        <fieldset th:attr="disabled=${!isAdmin}">
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <label class="form-label" for="gameName">Nimi</label>
+                    <input class="form-control" type="text" id="gameName" th:field="*{name}" required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label" for="gameDate">Päivä</label>
+                    <input class="form-control js-datetime" type="text" id="gameDate" th:field="*{date}" required>
+                </div>
             </div>
-            <div class="col-md-5">
-                <label class="form-label" for="gameDate">Päivä</label>
-                <input class="form-control js-datetime" type="text" id="gameDate" th:field="*{date}" required>
-            </div>
-        </div>
 
-        <div class="mt-4">
-            <div class="d-flex align-items-center justify-content-between">
-                <h5 class="mb-0">Kierrokset</h5>
-                <a class="btn btn-sm btn-outline-dark" th:if="${game.id != null}" th:href="@{/game/addRound/{id}(id=${game.id})}">Lisää kierros</a>
+            <div class="mt-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Kierrokset</h5>
+                    <a class="btn btn-sm btn-outline-dark" th:if="${game.id != null and isAdmin}" th:href="@{/game/addRound/{id}(id=${game.id})}">Lisää kierros</a>
+                    <span class="btn btn-sm btn-outline-dark disabled" th:if="${game.id != null and !isAdmin}" aria-disabled="true">Lisää kierros</span>
+                </div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Kenttä</th>
+                                <th>Kierroksen nimi</th>
+                                <th>Päivämäärä</th>
+                                <th>Panos</th>
+                                <th class="text-end"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="round, iter : ${game.round}">
+                                <td>
+                                    <input type="hidden" th:field="*{round[__${iter.index}__].id}">
+                                    <span th:text="${iter.index + 1}"></span>
+                                </td>
+                                <td>
+                                    <select class="form-select" th:field="*{round[__${iter.index}__].course.id}">
+                                        <option th:each="course : ${courseList}" th:value="${course.key}" th:text="${course.value}"></option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input class="form-control" type="text" th:field="*{round[__${iter.index}__].name}" required>
+                                </td>
+                                <td>
+                                    <input class="form-control js-datetime" type="text" th:field="*{round[__${iter.index}__].date}" required>
+                                </td>
+                                <td>
+                                    <input class="form-control" type="number" step="0.1" th:field="*{round[__${iter.index}__].bet}" required>
+                                </td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-danger" th:if="${round.id != null and isAdmin}" th:href="@{/game/remove-round/{gameId}/{id}(gameId=${game.id}, id=${round.id})}" onclick="return confirm('Poistetaanko kierros?');">Poista</a>
+                                    <span class="btn btn-sm btn-outline-danger disabled" th:if="${round.id != null and !isAdmin}" aria-disabled="true">Poista</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-responsive mt-3">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Kenttä </th>
-                            <th>Kierroksen nimi</th>
-                            <th>Päivämäärä</th>
-                            <th>Panos €</th>
-                            <th class="text-end"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="round, iter : ${game.round}">
-                            <td>
-                                <input type="hidden" th:field="*{round[__${iter.index}__].id}">
-                                <span th:text="${iter.index + 1}"></span>
-                            </td>
-                            <td>
-                                <select class="form-select" th:field="*{round[__${iter.index}__].course.id}">
-                                    <option th:each="course : ${courseList}" th:value="${course.key}" th:text="${course.value}"></option>
-                                </select>
-                            </td>
-                            <td>
-                                <input class="form-control" type="text" th:field="*{round[__${iter.index}__].name}" required>
-                            </td>
-                            <td>
-                                <input class="form-control js-datetime" type="text" th:field="*{round[__${iter.index}__].date}" required>
-                            </td>
-                            <td>
-                                <input class="form-control" type="number" step="0.1" th:field="*{round[__${iter.index}__].bet}" required>
-                            </td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-danger" th:if="${round.id != null}" th:href="@{/game/remove-round/{gameId}/{id}(gameId=${game.id}, id=${round.id})}" onclick="return confirm('Poistetaanko kierros?');">Poista</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+
+        </fieldset>
 
         <div class="d-flex gap-2 mt-4">
-            <button class="btn btn-brand" type="submit">Tallenna</button>
+            <button class="btn btn-brand" type="submit" th:if="${isAdmin}">Tallenna</button>
+            <span class="btn btn-brand disabled" th:unless="${isAdmin}" aria-disabled="true">Tallenna</span>
             <a class="btn btn-outline-dark" href="/game">Takaisin</a>
         </div>
     </form>

@@ -10,7 +10,10 @@
             <h1>Kentät</h1>
             <p class="text-muted">Tallenna kentän par-luvut.</p>
         </div>
-        <a class="btn btn-brand" href="/course/new">Uusi kenttä</a>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-brand" href="/course/new" th:if="${isAdmin}">Uusi kenttä</a>
+            <span class="btn btn-brand disabled" th:unless="${isAdmin}" aria-disabled="true">Uusi kenttä</span>
+        </div>
     </div>
 
     <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
@@ -29,11 +32,14 @@
                     <tr th:each="course, iter : ${courses}">
                         <td th:text="${iter.index + 1}"></td>
                         <td>
-                            <a class="link-dark" th:href="@{/course/edit/{id}(id=${course.id})}" th:text="${course.name}"></a>
+                            <a class="link-dark" th:if="${isAdmin}" th:href="@{/course/edit/{id}(id=${course.id})}" th:text="${course.name}"></a>
+                            <span th:unless="${isAdmin}" th:text="${course.name}"></span>
                         </td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/course/edit/{id}(id=${course.id})}">Muokkaa</a>
-                            <a class="btn btn-sm btn-outline-danger" th:href="@{/course/remove/{id}(id=${course.id})}" onclick="return confirm('Poistetaanko kenttä?');">Poista</a>
+                            <a class="btn btn-sm btn-outline-secondary" th:if="${isAdmin}" th:href="@{/course/edit/{id}(id=${course.id})}">Muokkaa</a>
+                            <span class="btn btn-sm btn-outline-secondary disabled" th:unless="${isAdmin}" aria-disabled="true">Muokkaa</span>
+                            <a class="btn btn-sm btn-outline-danger" th:if="${isAdmin}" th:href="@{/course/remove/{id}(id=${course.id})}" onclick="return confirm('Poistetaanko kenttä?');">Poista</a>
+                            <span class="btn btn-sm btn-outline-danger disabled" th:unless="${isAdmin}" aria-disabled="true">Poista</span>
                         </td>
                     </tr>
                 </tbody>

@@ -11,19 +11,20 @@
             <p class="text-muted" th:text="${game != null ? game.name : ''}"></p>
         </div>
         <div class="d-flex flex-wrap gap-2">
-    <a class="btn btn-accent" th:href="@{/score/leaderboard/{id}(id=${game.id})}">Leaderboard</a>
-    <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#import-form"
-            aria-expanded="false" aria-controls="import-form">Import</button>
-    <a class="btn btn-brand" th:href="@{/score/add/{id}(id=${round.roundId})}">Syötä tuloskortti</a>
-    <a class="btn btn-outline-dark" href="/game">Takaisin</a>
-</div>            
+            <a class="btn btn-accent" th:href="@{/score/leaderboard/{id}(id=${game.id})}">Leaderboard</a>
+            <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#import-form"
+                    aria-expanded="false" aria-controls="import-form" th:if="${isAdmin}">Tuo tulokset</button>
+            <span class="btn btn-outline-dark disabled" th:unless="${isAdmin}" aria-disabled="true">Tuo tulokset</span>
+            <a class="btn btn-brand" th:if="${isAdmin}" th:href="@{/score/add/{id}(id=${round.roundId})}">Syötä tuloskortti</a>
+            <span class="btn btn-brand disabled" th:unless="${isAdmin}" aria-disabled="true">Syötä tuloskortti</span>
+            <a class="btn btn-outline-dark" href="/game">Takaisin</a>
+        </div>
     </div>
-
-    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
     <p class="holes-hidden-note text-muted">Väyläkohtaiset tulokset piilotettu pystynäkymässä.</p>
 
-    <div class="collapse mt-3" id="import-form" th:if="${round != null}">
+    <div class="collapse mt-3" id="import-form" th:if="${round != null and isAdmin}">
         <div class="card-surface">
             <form action="/score/import" method="post">
                 <input type="hidden" name="gameId" th:value="${game != null ? game.id : ''}">
@@ -105,8 +106,9 @@
                     <tr th:each="score, iter : ${scoreList}">
                         <td th:text="${iter.index + 1}"></td>
                         <td class="text-nowrap">
-                            <a class="link-dark" th:href="@{/score/edit/{id}(id=${score.id})}" th:text="${score.player.firstName.substring(0,1) + '. ' + score.player.lastName}"></a>
-                        </td>
+    <a class="link-dark" th:if="${isAdmin}" th:href="@{/score/edit/{id}(id=${score.id})}" th:text="${score.player.firstName.substring(0,1) + '. ' + score.player.lastName}"></a>
+    <span th:unless="${isAdmin}" th:text="${score.player.firstName.substring(0,1) + '. ' + score.player.lastName}"></span>
+</td>
                         <td th:classappend="${score.isWinner(1) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole1 != null and score.hole1 lt selectedRound.getPar(1)) ? 'under-par' : '') + ((selectedRound != null and score.hole1 != null and score.hole1 le (selectedRound.getPar(1) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole1}"></span></td>
                         <td th:classappend="${score.isWinner(2) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole2 != null and score.hole2 lt selectedRound.getPar(2)) ? 'under-par' : '') + ((selectedRound != null and score.hole2 != null and score.hole2 le (selectedRound.getPar(2) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole2}"></span></td>
                         <td th:classappend="${score.isWinner(3) ? 'winner-cell' : ''}"><span th:class="${((selectedRound != null and score.hole3 != null and score.hole3 lt selectedRound.getPar(3)) ? 'under-par' : '') + ((selectedRound != null and score.hole3 != null and score.hole3 le (selectedRound.getPar(3) - 2)) ? ' under-par-2' : '')}" th:text="${score.hole3}"></span></td>

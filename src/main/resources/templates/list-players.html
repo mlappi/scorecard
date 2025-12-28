@@ -12,8 +12,11 @@
         </div>
         <div class="d-flex flex-wrap gap-2">
             <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#import-players" aria-expanded="false" aria-controls="import-players">Tuo pelaajat</button>
-            <a class="btn btn-brand" href="/player/new">Uusi pelaaja</a>
+                    data-bs-target="#import-players" aria-expanded="false" aria-controls="import-players"
+                    th:if="${isAdmin}">Tuo pelaajat</button>
+            <span class="btn btn-outline-dark disabled" th:unless="${isAdmin}" aria-disabled="true">Tuo pelaajat</span>
+            <a class="btn btn-brand" href="/player/new" th:if="${isAdmin}">Uusi pelaaja</a>
+            <span class="btn btn-brand disabled" th:unless="${isAdmin}" aria-disabled="true">Uusi pelaaja</span>
         </div>
     </div>
 
@@ -27,7 +30,7 @@
     <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
     <div th:if="${errormessage}" class="alert alert-warning" th:text="${errormessage}"></div>
 
-    <div class="collapse mt-3" id="import-players">
+    <div class="collapse mt-3" id="import-players" th:if="${isAdmin}">
         <div class="card-surface">
             <form action="/player/import" method="post">
                 <div class="row g-3">
@@ -65,12 +68,14 @@
                     <tr th:each="player, iter : ${players}">
                         <td th:text="${iter.index + 1}"></td>
                         <td>
-                            <a class="link-dark" th:href="@{/player/edit/{id}(id=${player.id})}" th:text="${player.firstName + ' ' + player.lastName}"></a>
+                            <a class="link-dark" th:if="${isAdmin}" th:href="@{/player/edit/{id}(id=${player.id})}" th:text="${player.firstName + ' ' + player.lastName}"></a>
+                            <span th:unless="${isAdmin}" th:text="${player.firstName + ' ' + player.lastName}"></span>
                         </td>
                         <td th:text="${player.hcp}"></td>
                         <td th:text="${player.email}"></td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-danger" th:href="@{/player/remove/{id}(id=${player.id})}" onclick="return confirm('Poistetaanko pelaaja?');">Poista</a>
+                            <a class="btn btn-sm btn-outline-danger" th:if="${isAdmin}" th:href="@{/player/remove/{id}(id=${player.id})}" onclick="return confirm('Poistetaanko pelaaja?');">Poista</a>
+                            <span class="btn btn-sm btn-outline-danger disabled" th:unless="${isAdmin}" aria-disabled="true">Poista</span>
                         </td>
                     </tr>
                 </tbody>

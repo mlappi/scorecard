@@ -1,4 +1,4 @@
-﻿package fi.mlappi.golf.controller;
+package fi.mlappi.golf.controller;
 
 import java.util.Date;
 import java.util.LinkedHashMap;

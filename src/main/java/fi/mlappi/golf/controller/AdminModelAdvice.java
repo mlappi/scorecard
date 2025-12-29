@@ -2,7 +2,6 @@ package fi.mlappi.golf.controller;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 

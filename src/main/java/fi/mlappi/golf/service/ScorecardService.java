@@ -3,8 +3,11 @@ package fi.mlappi.golf.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,7 +140,9 @@ public class ScorecardService {
 			return scores;
 		}
 
-		double pot = round.getBet() * scores.size();
+		BigDecimal bet = BigDecimal.valueOf(round.getBet() == null ? 0d : round.getBet());
+		long betCents = bet.setScale(2, RoundingMode.HALF_UP).movePointRight(2).longValueExact();
+		long potCents = betCents * scores.size();
 		for (int i = 1; i < 19; i++) {
 			Set<Player> players = getPlayersForLowestScore(scores, i, round);
 			if (!players.isEmpty()) {
@@ -148,21 +153,41 @@ public class ScorecardService {
 		if (round.getWinMap().isEmpty()) {
 			return scores;
 		}
-		double holeValue = pot / round.getWinMap().size();
+		List<Integer> holes = new ArrayList<>(round.getWinMap().keySet());
+		holes.sort(Integer::compareTo);
+		long holeBaseCents = potCents / round.getWinMap().size();
+		long holeRemainder = potCents % round.getWinMap().size();
+
+		Map<Long, Long> winCentsByPlayer = new HashMap<>();
+		for (int holeIndex = 0; holeIndex < holes.size(); holeIndex++) {
+			Integer hole = holes.get(holeIndex);
+			Set<Player> winners = round.getWinMap().get(hole);
+			if (winners == null || winners.isEmpty()) {
+				continue;
+			}
+			long holeCents = holeBaseCents + (holeIndex < holeRemainder ? 1 : 0);
+			List<Player> sortedWinners = new ArrayList<>(winners);
+			sortedWinners.sort(Comparator.comparing(Player::getId));
+			long winnerBaseCents = holeCents / sortedWinners.size();
+			long winnerRemainder = holeCents % sortedWinners.size();
+			for (int i = 0; i < sortedWinners.size(); i++) {
+				long add = winnerBaseCents + (i < winnerRemainder ? 1 : 0);
+				winCentsByPlayer.merge(sortedWinners.get(i).getId(), add, Long::sum);
+			}
+		}
 
 		for (Scorecard scorecard : scores) {
-				double wins = 0;
-				Set<Integer> holeset = round.getWinMap().keySet();
-				for (Integer hole : holeset) {
-					if (round.getWinMap().get(hole).contains(scorecard.getPlayer())) {
-						wins = wins + (holeValue / round.getWinMap().get(hole).size());
-						scorecard.getWinners().add(hole);
-					}
+			for (Integer hole : holes) {
+				Set<Player> winners = round.getWinMap().get(hole);
+				if (winners != null && winners.contains(scorecard.getPlayer())) {
+					scorecard.getWinners().add(hole);
 				}
-				if (wins > 0) {
-					scorecard.setWin(BigDecimal.valueOf(wins).setScale(2, RoundingMode.FLOOR).doubleValue());
-					scorecardRepository.save(scorecard);
-				}
+			}
+			Long winCents = winCentsByPlayer.get(scorecard.getPlayer().getId());
+			if (winCents != null && winCents > 0) {
+				scorecard.setWin(BigDecimal.valueOf(winCents).movePointLeft(2).doubleValue());
+				scorecardRepository.save(scorecard);
+			}
 		}
 		return scores;
 	}

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Leaderboard')}"></head>
 <body class="app-body">
@@ -21,9 +21,21 @@
                         <th>#</th>
                         <th>Pelaaja</th>
                         <th th:each="r, iter : ${rounds}" th:text="'R' + ${iter.index + 1}"></th>
-                        <th>Yht.</th>
-                        <th>+/-</th>
-                        <th>€</th>
+                        <th>
+                            <a class="link-dark text-decoration-none"
+                               th:classappend="${sort == 'totalAll' ? ' fw-semibold' : ''}"
+                               th:href="@{/score/leaderboard/{id}(id=${gameId}, sort='totalAll')}">Yht.</a>
+                        </th>
+                        <th>
+                            <a class="link-dark text-decoration-none"
+                               th:classappend="${sort == 'total' ? ' fw-semibold' : ''}"
+                               th:href="@{/score/leaderboard/{id}(id=${gameId}, sort='total')}">+/-</a>
+                        </th>
+                        <th>
+                            <a class="link-dark text-decoration-none"
+                               th:classappend="${sort == 'netTotal' ? ' fw-semibold' : ''}"
+                               th:href="@{/score/leaderboard/{id}(id=${gameId}, sort='netTotal')}">EUR</a>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +51,7 @@
             </table>
         </div>
         <div th:if="${scores == null or #lists.isEmpty(scores)}" class="empty-state">
-            <p>Ei tuloksia vielä.</p>
+            <p>Ei tuloksia viel�.</p>
         </div>
     </div>
 </main>

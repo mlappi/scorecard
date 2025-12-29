@@ -44,7 +44,8 @@ public class ScorecardController {
 	PlayerService playerService;
 
 	@RequestMapping("/score/leaderboard/{id}")
-	public String leaderboard(ModelMap model, @PathVariable("id") long id) {
+	public String leaderboard(ModelMap model, @PathVariable("id") long id,
+			@RequestParam(value = "sort", required = false) String sort) {
 		List<LeaderboardScore> scoreList = new ArrayList<>();
 		List<Long> rounds = new ArrayList<>();
 		Map<Long, LeaderboardScore> scoreMap = new HashMap<>();
@@ -86,11 +87,21 @@ public class ScorecardController {
 
 		scoreList.addAll(scoreMap.values());
 		
-		scoreList.sort((LeaderboardScore s1, LeaderboardScore s2) -> Double.valueOf(s1.getTotalAll())
-				.compareTo(Double.valueOf(s2.getTotalAll())));
+		if ("totalAll".equalsIgnoreCase(sort)) {
+			scoreList.sort((LeaderboardScore s1, LeaderboardScore s2) -> Integer.valueOf(s1.getTotalAll())
+					.compareTo(Integer.valueOf(s2.getTotalAll())));
+		} else if ("netTotal".equalsIgnoreCase(sort)) {
+			scoreList.sort((LeaderboardScore s1, LeaderboardScore s2) -> Double.valueOf(s2.getNetTotal())
+					.compareTo(Double.valueOf(s1.getNetTotal())));
+		} else {
+			scoreList.sort((LeaderboardScore s1, LeaderboardScore s2) -> Integer.valueOf(s1.getTotal())
+					.compareTo(Integer.valueOf(s2.getTotal())));
+			sort = "total";
+		}
 		model.addAttribute("scores", scoreList);
 		model.addAttribute("gameId", id);
 		model.addAttribute("rounds", rounds);
+		model.addAttribute("sort", sort);
 
 		return "leaderboard";
 	}
@@ -129,7 +140,8 @@ public class ScorecardController {
 
 	@RequestMapping(value = "/score/list/{gameId}")
 	public String scoreList(ModelMap model, @PathVariable("gameId") long gameId,
-			@ModelAttribute("round") RoundSelect roundSelect) {
+			@ModelAttribute("round") RoundSelect roundSelect,
+			@RequestParam(value = "sort", required = false) String sort) {
 		log.debug("scoreList game id  " + gameId);
 		log.debug("round " + roundSelect);
 		Game game = gameService.find(gameId);
@@ -143,13 +155,18 @@ public class ScorecardController {
 			i++;
 		}
 
-		List<Scorecard> scores = scoreService.findByRoundId(roundSelect.getRoundId());
-		scores = scoreService.countWins(roundSelect.getRoundId());
-		scores.sort((Scorecard s1, Scorecard s2) -> Double.valueOf(s2.getWin()).compareTo(Double.valueOf(s1.getWin())));
+		List<Scorecard> scores = scoreService.countWins(roundSelect.getRoundId());
+		if ("total".equalsIgnoreCase(sort)) {
+			scores.sort((Scorecard s1, Scorecard s2) -> Integer.valueOf(s1.getCountTotal()).compareTo(Integer.valueOf(s2.getCountTotal())));
+		} else {
+			scores.sort((Scorecard s1, Scorecard s2) -> Double.valueOf(s2.getWin()).compareTo(Double.valueOf(s1.getWin())));
+			sort = "win";
+		}
 		model.addAttribute("game", game);
 		model.addAttribute("scoreList", scores);
 		model.addAttribute("roundList", roundList);
 		model.addAttribute("round", roundSelect);
+		model.addAttribute("sort", sort);
 		model.addAttribute("importPlayerList", buildAvailablePlayers(game.getRound(roundSelect.getRoundId())));
 
 		return "list-scores";

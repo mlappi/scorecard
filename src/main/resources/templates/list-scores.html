@@ -63,6 +63,7 @@
 
     <form class="card-surface" th:action="@{/score/list/{gameId}(gameId=${game.id})}" method="get" th:object="${round}"
           th:with="selectedRound=${game != null ? game.getRound(round.roundId) : null}">
+        <input type="hidden" name="sort" th:value="${sort}">
         <div class="row g-3 align-items-end">
             <div class="col-md-6">
                 <label class="form-label">Valitse kierros</label>
@@ -88,8 +89,16 @@
                         <th>Out</th>
                         <th th:each="i : ${#numbers.sequence(10,18)}" th:text="${i}"></th>
                         <th>In</th>
-                        <th>TOT</th>
-                        <th>EUR</th>
+                        <th>
+                            <a class="link-dark text-decoration-none"
+                               th:classappend="${sort == 'total' ? ' fw-semibold' : ''}"
+                               th:href="@{/score/list/{gameId}(gameId=${game.id}, roundId=${round.roundId}, sort='total')}">TOT</a>
+                        </th>
+                        <th>
+                            <a class="link-dark text-decoration-none"
+                               th:classappend="${sort == 'win' ? ' fw-semibold' : ''}"
+                               th:href="@{/score/list/{gameId}(gameId=${game.id}, roundId=${round.roundId}, sort='win')}">EUR</a>
+                        </th>
                     </tr>
                     <tr class="text-muted small">
                         <th></th>

@@ -236,13 +236,10 @@
     <button class="btn btn-outline-dark" type="reset">Palauta</button>
     <a class="btn btn-outline-danger" th:if="${score.id != null and isAdmin}" th:href="@{/score/remove/{id}(id=${score.id})}" onclick="return confirm('Remove this scorecard?');">Poista</a>
     <span class="btn btn-outline-danger disabled" th:if="${score.id != null and !isAdmin}" aria-disabled="true">Poista</span>
-</div>
-</fieldset>
-
-<div class="d-flex gap-2 mt-2">
     <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId}, roundId=${roundId})}">Takaisin</a>
 </div>
-        </form>
+</fieldset>
+      </form>
     </div>
 </main>
 <footer th:replace="~{layout :: footer}"></footer>

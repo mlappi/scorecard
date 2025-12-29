@@ -58,19 +58,14 @@ public class Round {
 	private Double bet;
 
     @Transient
-	private Map<Integer, Set<Player>> winMap = new HashMap<>();
-    
+	private Map<Integer, Set<Player>> winMap = new HashMap<>();    
 
-	public Round() {
-		
+	public Round() {		
 	}
 
 	public long getPar(int hole) {
-		log.debug("get par for hole " +hole);
 		for(Hole h : course.getHole()) {
-			log.debug("hole " +h.getHole());
 			if(h.getHole() == hole) {
-				log.debug("hole " +h.getPar());
 				return h.getPar();
 			}		
 		}

@@ -41,19 +41,23 @@ public class Round {
 	private Long id;
     @NonNull
 	private String name;	    
+	
     @NonNull
 //    psql type: @Column(columnDefinition = "timestamptz")
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern="dd.MM.yyyy HH:mm")
 	private Date date;
+
 	@ManyToOne(fetch=FetchType.EAGER)
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude
 	private Course course;
+
 	@ManyToOne
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude
 	private Game game;
+
     @NumberFormat(style = Style.CURRENCY)
 	private Double bet;
 

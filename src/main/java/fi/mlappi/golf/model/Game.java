@@ -37,13 +37,16 @@ public class Game {
 	@GeneratedValue(generator = "sequence", strategy = GenerationType.SEQUENCE)
 	@SequenceGenerator(name = "sequence", allocationSize = 10)
 	private Long id;
+	
 	@NonNull
 	private String name;
+	
 	@NonNull
 	//psql type: @Column(columnDefinition = "timestamptz")
 	@Temporal(TemporalType.TIMESTAMP)
 	@DateTimeFormat(pattern = "dd.MM.yyyy HH:mm")
 	private Date date;
+
 	@OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@OrderBy(value="date")
 	@ToString.Exclude

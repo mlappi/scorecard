@@ -28,3 +28,4 @@ data/hsqldb/devdb.lck
 data/hsqldb/devdb.log
 data/hsqldb/devdb.properties
 data/hsqldb/devdb.script
+.vscode/launch.json

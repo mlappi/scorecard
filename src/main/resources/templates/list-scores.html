@@ -75,6 +75,7 @@
                 <div class="summary-line" th:if="${selectedRound != null}">
                     <span th:text="${#dates.format(selectedRound.date, 'dd.MM.yyyy HH:mm')}"></span>
                     <span th:text="${'Bet: ' + #numbers.formatDecimal(selectedRound.bet, 1, 2) + ' EUR'}"></span>
+                    <span th:text="${selectedRound.basicSkin ? 'Basic skin' : 'Jenkki-skini'}"></span>
                 </div>
             </div>
         </div>

@@ -59,7 +59,7 @@ public class ScorecardController {
 		}
 		for (Round r : game.getRound()) {
 			List<Scorecard> scorecards = scoreService.countWins(r.getId());
-			double bet = r.getBet() != null ? r.getBet() : 0d;
+			double playerStake = scoreService.getPlayerStake(r, scorecards);
 			Integer index = roundIndex.get(r.getId());
 			for (Scorecard s : scorecards) {
 				if (!scoreMap.containsKey(s.getPlayer().getId())) {
@@ -81,7 +81,7 @@ public class ScorecardController {
 					lbs.setTotalAll(lbs.getTotalAll() + total);
 					lbs.setTotal(lbs.getTotal() + (total - s.getRound().getCourse().getCountTotal()));
 				}
-				lbs.setNetTotal(lbs.getNetTotal() + (s.getWin() - bet));
+				lbs.setNetTotal(lbs.getNetTotal() + (s.getWin() - playerStake));
 			}
 		}
 

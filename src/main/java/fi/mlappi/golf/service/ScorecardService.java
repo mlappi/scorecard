@@ -140,32 +140,19 @@ public class ScorecardService {
 			return scores;
 		}
 
-		BigDecimal bet = BigDecimal.valueOf(round.getBet() == null ? 0d : round.getBet());
-		long betCents = bet.setScale(2, RoundingMode.HALF_UP).movePointRight(2).longValueExact();
-		long potCents = betCents * scores.size();
-		for (int i = 1; i < 19; i++) {
-			Set<Player> players = getPlayersForLowestScore(scores, i, round);
-			if (!players.isEmpty()) {
-				round.getWinMap().put(i, players);
-			}
-		}
-
-		if (round.getWinMap().isEmpty()) {
-			return scores;
-		}
-		List<Integer> holes = new ArrayList<>(round.getWinMap().keySet());
+		RoundWinResult roundWinResult = calculateRoundWins(round, scores);
+		round.getWinMap().clear();
+		round.getWinMap().putAll(roundWinResult.winnersByHole);
+		List<Integer> holes = new ArrayList<>(roundWinResult.winnersByHole.keySet());
 		holes.sort(Integer::compareTo);
-		long holeBaseCents = potCents / round.getWinMap().size();
-		long holeRemainder = potCents % round.getWinMap().size();
 
 		Map<Long, Long> winCentsByPlayer = new HashMap<>();
-		for (int holeIndex = 0; holeIndex < holes.size(); holeIndex++) {
-			Integer hole = holes.get(holeIndex);
-			Set<Player> winners = round.getWinMap().get(hole);
+		for (Integer hole : holes) {
+			Set<Player> winners = roundWinResult.winnersByHole.get(hole);
 			if (winners == null || winners.isEmpty()) {
 				continue;
 			}
-			long holeCents = holeBaseCents + (holeIndex < holeRemainder ? 1 : 0);
+			long holeCents = roundWinResult.winCentsByHole.getOrDefault(hole, 0L);
 			List<Player> sortedWinners = new ArrayList<>(winners);
 			sortedWinners.sort(Comparator.comparing(Player::getId));
 			long winnerBaseCents = holeCents / sortedWinners.size();
@@ -177,8 +164,10 @@ public class ScorecardService {
 		}
 
 		for (Scorecard scorecard : scores) {
+			scorecard.setWin(0d);
+			scorecard.getWinners().clear();
 			for (Integer hole : holes) {
-				Set<Player> winners = round.getWinMap().get(hole);
+				Set<Player> winners = roundWinResult.winnersByHole.get(hole);
 				if (winners != null && winners.contains(scorecard.getPlayer())) {
 					scorecard.getWinners().add(hole);
 				}
@@ -186,10 +175,47 @@ public class ScorecardService {
 			Long winCents = winCentsByPlayer.get(scorecard.getPlayer().getId());
 			if (winCents != null && winCents > 0) {
 				scorecard.setWin(BigDecimal.valueOf(winCents).movePointLeft(2).doubleValue());
-				scorecardRepository.save(scorecard);
 			}
+			scorecardRepository.save(scorecard);
 		}
 		return scores;
+	}
+
+	public double getPlayerStake(Round round, List<Scorecard> scores) {
+		if (round == null || scores == null || scores.isEmpty()) {
+			return 0d;
+		}
+		RoundWinResult roundWinResult = calculateRoundWins(round, scores);
+		long playerStakeCents = roundWinResult.awardedPotCents / scores.size();
+		return BigDecimal.valueOf(playerStakeCents).movePointLeft(2).doubleValue();
+	}
+
+	private RoundWinResult calculateRoundWins(Round round, List<Scorecard> scores) {
+		RoundWinResult result = new RoundWinResult();
+		long carryCents = 0;
+		for (int hole = 1; hole < 19; hole++) {
+			carryCents += getHolePotCents(round, scores.size(), hole);
+			Set<Player> players = getPlayersForLowestScore(scores, hole, round);
+			if (!players.isEmpty()) {
+				result.winnersByHole.put(hole, players);
+				result.winCentsByHole.put(hole, carryCents);
+				result.awardedPotCents += carryCents;
+				carryCents = 0;
+			}
+		}
+		return result;
+	}
+
+	private long getHolePotCents(Round round, int playerCount, int hole) {
+		BigDecimal bet = BigDecimal.valueOf(round.getBet() == null ? 0d : round.getBet());
+		long betCents = bet.setScale(2, RoundingMode.HALF_UP).movePointRight(2).longValueExact();
+		if (round.isBasicSkin()) {
+			return betCents * playerCount;
+		}
+		long roundPotCents = betCents * playerCount;
+		long holeBaseCents = roundPotCents / 18;
+		long holeRemainder = roundPotCents % 18;
+		return holeBaseCents + (hole <= holeRemainder ? 1 : 0);
 	}
 
 	private Set<Player> getPlayersForLowestScore(List<Scorecard> scores, int hole, Round round) {
@@ -211,7 +237,7 @@ public class ScorecardService {
 					bestPlayer = scorecard.getPlayer();
 					bestScore = score;
 					players.add(bestPlayer);
-				} else if (bestScore == score && round.getPar(hole) <= bestScore) {					
+				} else if (bestScore == score && (round.isBasicSkin() || round.getPar(hole) <= bestScore)) {
 					players.remove(bestPlayer);
 					bestPlayer = null;
 				}
@@ -225,6 +251,12 @@ public class ScorecardService {
 			}
 		}
 		return players;
+	}
+
+	private static class RoundWinResult {
+		private final Map<Integer, Set<Player>> winnersByHole = new HashMap<>();
+		private final Map<Integer, Long> winCentsByHole = new HashMap<>();
+		private long awardedPotCents;
 	}
     
 }

@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Temporal;
@@ -60,6 +61,9 @@ public class Round {
 
     @NumberFormat(style = Style.CURRENCY)
 	private Double bet;
+
+	@Column(nullable = false, columnDefinition = "boolean default false")
+	private boolean basicSkin;
 
     @Transient
 	private Map<Integer, Set<Player>> winMap = new HashMap<>();    

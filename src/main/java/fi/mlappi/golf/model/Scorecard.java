@@ -1,9 +1,16 @@
 package fi.mlappi.golf.model;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.FetchType;
@@ -33,6 +40,16 @@ public class Scorecard {
     private Round round;
     @ManyToOne(fetch=FetchType.EAGER)
     private Player player;
+    @Enumerated(EnumType.STRING)
+    private PlayFormat playFormat = PlayFormat.INDIVIDUAL;
+    private String teamName;
+    private String externalCompetitorId;
+    private Double playingHcp;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "SCORECARD_PARTICIPANT",
+            joinColumns = @JoinColumn(name = "SCORECARD_ID"),
+            inverseJoinColumns = @JoinColumn(name = "PLAYER_ID"))
+    private Set<Player> participants = new LinkedHashSet<>();
     private Integer hole1;
     private Integer hole2;
     private Integer hole3;
@@ -55,6 +72,38 @@ public class Scorecard {
     
     @Transient
     private Set<Integer> winners = new HashSet<>();
+    @Transient
+    private int skinsWon;
+
+    public PlayFormat getPlayFormat() {
+        return playFormat == null ? PlayFormat.INDIVIDUAL : playFormat;
+    }
+
+    public boolean isTeamScorecard() {
+        return getPlayFormat().isTeamFormat();
+    }
+
+    public List<Player> getCompetitors() {
+        if (isTeamScorecard()) {
+            return participants.stream().toList();
+        }
+        return player == null ? List.of() : List.of(player);
+    }
+
+    public String getDisplayName() {
+        if (isTeamScorecard()) {
+            return teamName == null || teamName.isBlank() ? "Joukkue" : teamName;
+        }
+        return player == null ? "" : player.getFirstName() + " " + player.getLastName();
+    }
+
+    public String getParticipantNames() {
+        return getCompetitors().stream()
+                .map(participant -> participant.getFirstName() + " " + participant.getLastName())
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .reduce((first, second) -> first + ", " + second)
+                .orElse("");
+    }
 
 
 	public Integer getScore(int hole) {

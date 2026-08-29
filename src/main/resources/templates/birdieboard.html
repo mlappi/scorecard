@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Birdieboard')}"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="~{layout :: nav('games')}"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Birdieboard</h1>
+            <p class="text-muted" th:text="${game != null ? game.name : ''}"></p>
+        </div>
+        <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card-surface">
+                <h2 class="h4 mb-3">Eagles</h2>
+                <div th:if="${eagles != null and !#lists.isEmpty(eagles)}" class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Pelaaja</th>
+                                <th>Omat</th>
+                                <th>Joukkue</th>
+                                <th>Yhteensä</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="score, iter : ${eagles}">
+                                <td th:text="${iter.index + 1}"></td>
+                                <td th:text="${score.name}"></td>
+                                <td th:text="${score.individualTotal}"></td>
+                                <td th:text="${score.teamTotal}"></td>
+                                <td class="fw-semibold" th:text="${score.total}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${eagles == null or #lists.isEmpty(eagles)}" class="empty-state">
+                    <p>Ei tuloksia vielä.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card-surface">
+                <h2 class="h4 mb-3">Birdies</h2>
+                <div th:if="${birdies != null and !#lists.isEmpty(birdies)}" class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Pelaaja</th>
+                                <th>Omat</th>
+                                <th>Joukkue</th>
+                                <th>Yhteensä</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="score, iter : ${birdies}">
+                                <td th:text="${iter.index + 1}"></td>
+                                <td th:text="${score.name}"></td>
+                                <td th:text="${score.individualTotal}"></td>
+                                <td th:text="${score.teamTotal}"></td>
+                                <td class="fw-semibold" th:text="${score.total}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:if="${birdies == null or #lists.isEmpty(birdies)}" class="empty-state">
+                    <p>Ei tuloksia vielä.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{layout :: footer}"></footer>
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

@@ -36,6 +36,8 @@ public class Player {
     @Column
     @NumberFormat(style = Style.CURRENCY)
     private Double hcp;
+    @Column(unique = true)
+    private Long externalUserId;
     @Column
     private String email;
 

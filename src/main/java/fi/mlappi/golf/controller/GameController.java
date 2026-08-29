@@ -113,13 +113,8 @@ public class GameController  {
 			RedirectAttributes redirectAttributes) {
 		if (id > 0) {
 			log.debug("remove round " + id);
-			if (scoreService.findByRoundId(id).isEmpty()) {
-				gameService.removeRound(id);
-				redirectAttributes.addFlashAttribute("message", "Kierros on poistettu onnistuneesti.");
-			} else {
-				redirectAttributes.addFlashAttribute("errormessage",
-						"Poistaaksesi kierroksen, poista ensin kaikki siihen liittyvät tuloskortit.");
-			}
+			gameService.removeRound(id);
+			redirectAttributes.addFlashAttribute("message", "Kierros ja sen tuloskortit on poistettu onnistuneesti.");
 		}
 		return "redirect:/game/edit/" + gameId;
 	}

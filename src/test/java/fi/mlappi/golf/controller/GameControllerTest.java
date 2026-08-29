@@ -139,7 +139,6 @@ class GameControllerTest {
 
     @Test
     void removeRoundDeletesRoundWhenNoScores() {
-        when(scoreService.findByRoundId(4L)).thenReturn(Collections.emptyList());
         RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
 
         String view = controller.removeRound(new ModelMap(), 1L, 4L, redirectAttributes);
@@ -150,15 +149,14 @@ class GameControllerTest {
     }
 
     @Test
-    void removeRoundKeepsRoundWhenScoresExist() {
-        when(scoreService.findByRoundId(4L)).thenReturn(List.of(new Scorecard()));
+    void removeRoundDeletesRoundWhenScoresExist() {
         RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
 
         String view = controller.removeRound(new ModelMap(), 1L, 4L, redirectAttributes);
 
         assertThat(view).isEqualTo("redirect:/game/edit/1");
-        assertThat(redirectAttributes.getFlashAttributes()).containsKey("errormessage");
-        verify(gameService, never()).removeRound(any(Long.class));
+        assertThat(redirectAttributes.getFlashAttributes()).containsKey("message");
+        verify(gameService).removeRound(4L);
     }
 
     @Test

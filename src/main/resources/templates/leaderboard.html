@@ -7,34 +7,41 @@
 <main class="container py-4">
     <div class="page-header">
         <div>
-            <h1>Leaderboard</h1>
+            <h1>Leaderboard - Win The Right Holes!</h1>
             <p class="text-muted">Kierrostulokset ja tuotot</p>
         </div>
         <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
     </div>
 
     <div class="card-surface">
-        <div th:if="${scores != null and !#lists.isEmpty(scores)}" class="table-responsive">
+        <div class="nav nav-pills gap-2 mb-4">
+            <a class="nav-link" th:classappend="${view == 'money' ? ' active' : ''}"
+               th:href="@{/score/leaderboard/{id}(id=${gameId}, view='money')}">Rahalista</a>
+            <a class="nav-link" th:classappend="${view == 'stroke' ? ' active' : ''}"
+               th:href="@{/score/leaderboard/{id}(id=${gameId}, view='stroke')}">Lyöntipeli</a>
+        </div>
+
+        <div th:if="${view == 'money' and scores != null and !#lists.isEmpty(scores)}" class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>Pelaaja</th>
-                        <th th:each="r, iter : ${rounds}" th:text="'R' + ${iter.index + 1}"></th>
+                        <th>Kierrokset</th>
                         <th>
                             <a class="link-dark text-decoration-none"
-                               th:classappend="${sort == 'totalAll' ? ' fw-semibold' : ''}"
-                               th:href="@{/score/leaderboard/{id}(id=${gameId}, sort='totalAll')}">Yht.</a>
+                               th:classappend="${sort == 'grossTotal' ? ' fw-semibold' : ''}"
+                               th:href="@{/score/leaderboard/{id}(id=${gameId}, view='money', sort='grossTotal')}">Voitot EUR</a>
                         </th>
                         <th>
                             <a class="link-dark text-decoration-none"
-                               th:classappend="${sort == 'total' ? ' fw-semibold' : ''}"
-                               th:href="@{/score/leaderboard/{id}(id=${gameId}, sort='total')}">+/-</a>
+                               th:classappend="${sort == 'stakeTotal' ? ' fw-semibold' : ''}"
+                               th:href="@{/score/leaderboard/{id}(id=${gameId}, view='money', sort='stakeTotal')}">Panokset EUR</a>
                         </th>
                         <th>
                             <a class="link-dark text-decoration-none"
                                th:classappend="${sort == 'netTotal' ? ' fw-semibold' : ''}"
-                               th:href="@{/score/leaderboard/{id}(id=${gameId}, sort='netTotal')}">EUR</a>
+                               th:href="@{/score/leaderboard/{id}(id=${gameId}, view='money', sort='netTotal')}">Netto EUR</a>
                         </th>
                     </tr>
                 </thead>
@@ -42,16 +49,61 @@
                     <tr th:each="score, iter : ${scores}">
                         <td th:text="${iter.index + 1}"></td>
                         <td th:text="${score.name}"></td>
-                        <td th:each="roundScore : ${score.score}" th:text="${roundScore}"></td>
-                        <td th:text="${score.totalAll}"></td>
-                        <td th:text="${score.total}"></td>
-                        <td th:text="${#numbers.formatDecimal(score.netTotal, 1, 2)}"></td>
+                        <td th:text="${score.roundsPlayed}"></td>
+                        <td th:text="${#numbers.formatDecimal(score.grossTotal, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(score.stakeTotal, 1, 2)}"></td>
+                        <td class="fw-semibold" th:text="${#numbers.formatDecimal(score.netTotal, 1, 2)}"></td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <div th:if="${view == 'stroke' and scores != null and !#lists.isEmpty(scores)}">
+            <p class="text-muted small" th:if="${teamRounds != null and !#sets.isEmpty(teamRounds)}">
+                * Joukkuepelikierros: joukkueen yhteistulos lasketaan mukaan kummankin pelaajan tuloksiin.
+            </p>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Pelaaja</th>
+                            <th th:each="r, iter : ${rounds}"
+                                th:text="${'R' + (iter.index + 1) + (teamRounds.contains(r) ? '*' : '')}"></th>
+                            <th>Kierrokset</th>
+                            <th>
+                                <a class="link-dark text-decoration-none"
+                                   th:classappend="${sort == 'totalAll' ? ' fw-semibold' : ''}"
+                                   th:href="@{/score/leaderboard/{id}(id=${gameId}, view='stroke', sort='totalAll')}">Yht.</a>
+                            </th>
+                            <th>
+                                <a class="link-dark text-decoration-none"
+                                   th:classappend="${sort == 'total' ? ' fw-semibold' : ''}"
+                                   th:href="@{/score/leaderboard/{id}(id=${gameId}, view='stroke', sort='total')}">+/-</a>
+                            </th>
+                            <th>
+                                <a class="link-dark text-decoration-none"
+                                   th:classappend="${sort == 'average' ? ' fw-semibold' : ''}"
+                                   th:href="@{/score/leaderboard/{id}(id=${gameId}, view='stroke', sort='average')}">+/- / kierros</a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="score, iter : ${scores}">
+                            <td th:text="${iter.index + 1}"></td>
+                            <td th:text="${score.name}"></td>
+                            <td th:each="roundScore : ${score.score}" th:text="${roundScore != null ? roundScore : '–'}"></td>
+                            <td th:text="${score.roundsPlayed}"></td>
+                            <td th:text="${score.totalAll}"></td>
+                            <td th:text="${score.total}"></td>
+                            <td class="fw-semibold" th:text="${#numbers.formatDecimal(score.averageToPar, 1, 2)}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
         <div th:if="${scores == null or #lists.isEmpty(scores)}" class="empty-state">
-            <p>Ei tuloksia viel�.</p>
+            <p>Ei tuloksia vielä.</p>
         </div>
     </div>
 </main>

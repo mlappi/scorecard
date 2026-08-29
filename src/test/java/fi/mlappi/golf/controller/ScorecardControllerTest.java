@@ -3,25 +3,33 @@ package fi.mlappi.golf.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.ArgumentCaptor;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Game;
+import fi.mlappi.golf.model.Hole;
 import fi.mlappi.golf.model.Player;
+import fi.mlappi.golf.model.PlayFormat;
 import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.model.Scorecard;
 import fi.mlappi.golf.service.GameService;
@@ -101,7 +109,7 @@ class ScorecardControllerTest {
         ModelMap model = new ModelMap();
         BindingResult result = new BeanPropertyBindingResult(score, "score");
 
-        String view = controller.save(model, score, 3L, null, 2L, result);
+        String view = controller.save(model, score, 3L, null, 2L, null, null, null, result);
 
         assertThat(view).isEqualTo("new-scorecard");
         verify(scoreService, never()).save(any(Scorecard.class));
@@ -121,7 +129,7 @@ class ScorecardControllerTest {
         ModelMap model = new ModelMap();
         BindingResult result = new BeanPropertyBindingResult(score, "score");
 
-        String view = controller.save(model, score, 3L, 8L, 2L, result);
+        String view = controller.save(model, score, 3L, 8L, 2L, null, null, null, result);
 
         assertThat(view).isEqualTo("new-scorecard");
         verify(scoreService, never()).save(any(Scorecard.class));
@@ -139,7 +147,7 @@ class ScorecardControllerTest {
         ModelMap model = new ModelMap();
         BindingResult result = new BeanPropertyBindingResult(score, "score");
 
-        String view = controller.save(model, score, 3L, 8L, 2L, result);
+        String view = controller.save(model, score, 3L, 8L, 2L, null, null, null, result);
 
         assertThat(view).isEqualTo("redirect:/score/list/3?roundId=2");
         verify(scoreService).save(score);
@@ -202,7 +210,77 @@ class ScorecardControllerTest {
     }
 
     @Test
-    void leaderboardDefaultsToTotalSort() {
+    void importScoresFromJsonSavesTwoRoundsAndConvertsDashToParPlusFive() {
+        Round firstRound = buildRound(10L, 3L);
+        Round secondRound = buildRound(11L, 3L);
+        addParHoles(firstRound.getCourse(), 4);
+        addParHoles(secondRound.getCourse(), 3);
+        Player player = buildPlayer(7L, "Matti", "Mallikas");
+        controller.objectMapper = new ObjectMapper();
+        when(gameService.findRound(10L)).thenReturn(firstRound);
+        when(gameService.findRound(11L)).thenReturn(secondRound);
+        when(playerService.findOrCreateByExternalUserId(123L, "Matti", "Mallikas", -1.2)).thenReturn(player);
+        MockMultipartFile file = new MockMultipartFile("resultsFile", "results.json", "application/json",
+                """
+                {"data":{"primary":{"players":[{"name":"Matti Mallikas","userId":123,"rounds":[
+                {"hcp":-1.2,"strokes":["4","-","4","4","4","4","4","4","4","4","4","4","4","4","4","4","4","4"]},
+                {"hcp":-1.2,"strokes":["3","-","3","3","3","3","3","3","3","3","3","3","3","3","3","3","3","3"]}
+                ]}]}}}
+                """.getBytes());
+        RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
+        String view = controller.importScoresFromJson(3L, null, 10L, 11L, file, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/score/list/3?roundId=10");
+        assertThat(redirectAttributes.getFlashAttributes().get("message")).isEqualTo(
+                "Tuotu 2 tuloskorttia. Ohitettu 0 riviä.");
+        ArgumentCaptor<Scorecard> captor = ArgumentCaptor.forClass(Scorecard.class);
+        verify(scoreService, times(2)).save(captor.capture());
+        assertThat(captor.getAllValues().get(0).getRound()).isSameAs(firstRound);
+        assertThat(captor.getAllValues().get(0).getHole2()).isEqualTo(9);
+        assertThat(captor.getAllValues().get(1).getRound()).isSameAs(secondRound);
+        assertThat(captor.getAllValues().get(1).getHole2()).isEqualTo(8);
+    }
+
+    @Test
+    void importScoresFromJsonImportsGreensomeTeam() {
+        Round round = buildRound(10L, 3L);
+        addParHoles(round.getCourse(), 4);
+        Player firstMember = buildPlayer(7L, "Kari", "Kärkkäinen");
+        Player secondMember = buildPlayer(8L, "Tommi", "Mustikkamaa");
+        controller.objectMapper = new ObjectMapper();
+        when(gameService.findRound(10L)).thenReturn(round);
+        when(playerService.findOrCreateByExternalUserId(7631L, "Kari", "Kärkkäinen", null)).thenReturn(firstMember);
+        when(playerService.findOrCreateByExternalUserId(579284L, "Tommi", "Mustikkamaa", null)).thenReturn(secondMember);
+        MockMultipartFile file = new MockMultipartFile("resultsFile", "greensome.json", "application/json",
+                """
+                {"data":{"primary":{"players":[{
+                  "name":"Team KaTo","teamId":"176732763",
+                  "team":[{"name":"Kari Kärkkäinen","userId":7631},{"name":"Tommi Mustikkamaa","userId":579284}],
+                  "rounds":[{"playingHcp":-17,"strokes":["7","4","4","5","3","6","5","3","4","4","6","5","3","4","3","6","5","5"]}]
+                }]}}}
+                """.getBytes());
+        RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
+
+        String view = controller.importScoresFromJson(3L, null, 10L, null, file, redirectAttributes);
+
+        assertThat(view).isEqualTo("redirect:/score/list/3?roundId=10");
+        assertThat(redirectAttributes.getFlashAttributes().get("message")).isEqualTo(
+                "Tuotu 1 tuloskorttia. Ohitettu 0 riviä.");
+        ArgumentCaptor<Scorecard> captor = ArgumentCaptor.forClass(Scorecard.class);
+        verify(scoreService).save(captor.capture());
+        assertThat(captor.getValue().getPlayer()).isNull();
+        assertThat(captor.getValue().getPlayFormat()).isEqualTo(PlayFormat.GREENSOME);
+        assertThat(captor.getValue().getExternalCompetitorId()).isEqualTo("176732763");
+        assertThat(captor.getValue().getTeamName()).isEqualTo("Team KaTo");
+        assertThat(captor.getValue().getPlayingHcp()).isEqualTo(-17d);
+        assertThat(captor.getValue().getParticipants()).containsExactlyInAnyOrder(firstMember, secondMember);
+        assertThat(captor.getValue().getHole1()).isEqualTo(7);
+        assertThat(captor.getValue().getHole18()).isEqualTo(5);
+    }
+
+    @Test
+    void leaderboardDefaultsToNetTotalSort() {
         Game game = buildGameWithRounds();
         Scorecard scorecard = buildCompleteScorecard();
         Player player = new Player();
@@ -216,11 +294,176 @@ class ScorecardControllerTest {
         when(scoreService.countWins(11L)).thenReturn(Collections.emptyList());
         ModelMap model = new ModelMap();
 
-        String view = controller.leaderboard(model, 1L, "unknown");
+        String view = controller.leaderboard(model, 1L, "unknown", null);
 
         assertThat(view).isEqualTo("leaderboard");
-        assertThat(model.get("sort")).isEqualTo("total");
+        assertThat(model.get("sort")).isEqualTo("netTotal");
+        assertThat(model.get("view")).isEqualTo("money");
         assertThat(model.get("scores")).isInstanceOf(List.class);
+    }
+
+    @Test
+    void leaderboardLegacyStrokeSortSelectsStrokeView() {
+        Game game = buildGameWithRounds();
+        Scorecard scorecard = buildCompleteScorecard();
+        scorecard.setPlayer(buildPlayer(5L, "Ari", "Aalto"));
+        scorecard.setRound(game.getRound().get(0));
+        when(gameService.find(1L)).thenReturn(game);
+        when(scoreService.countWins(10L)).thenReturn(List.of(scorecard));
+        when(scoreService.countWins(11L)).thenReturn(Collections.emptyList());
+        ModelMap model = new ModelMap();
+
+        controller.leaderboard(model, 1L, "total", null);
+
+        assertThat(model.get("view")).isEqualTo("stroke");
+        assertThat(model.get("sort")).isEqualTo("total");
+    }
+
+    @Test
+    void leaderboardCreditsTeamSkinsToMembersAndSplitsNetIncome() {
+        Game game = buildGameWithRounds();
+        Round round = game.getRound().get(0);
+        Player firstPlayer = buildPlayer(5L, "Ari", "Aalto");
+        Player secondPlayer = buildPlayer(6L, "Bertta", "Birdie");
+        Scorecard teamScore = buildCompleteScorecard();
+        teamScore.setRound(round);
+        teamScore.setPlayFormat(PlayFormat.GREENSOME);
+        teamScore.setSkinsWon(3);
+        teamScore.setWin(10d);
+        teamScore.getParticipants().add(firstPlayer);
+        teamScore.getParticipants().add(secondPlayer);
+        when(gameService.find(1L)).thenReturn(game);
+        when(scoreService.countWins(10L)).thenReturn(List.of(teamScore));
+        when(scoreService.countWins(11L)).thenReturn(Collections.emptyList());
+        when(scoreService.getPlayerStake(round, List.of(teamScore))).thenReturn(2d);
+        ModelMap model = new ModelMap();
+
+        controller.leaderboard(model, 1L, null, null);
+
+        List<LeaderboardScore> scores = (List<LeaderboardScore>) model.get("scores");
+        assertThat(scores).hasSize(2);
+        assertThat(scores).allSatisfy(score -> {
+            assertThat(score.getSkinsWon()).isEqualTo(3);
+            assertThat(score.getRoundsPlayed()).isEqualTo(1);
+            assertThat(score.getGrossTotal()).isEqualTo(5d);
+            assertThat(score.getStakeTotal()).isEqualTo(1d);
+            assertThat(score.getNetTotal()).isEqualTo(4d);
+            assertThat(score.getTotalAll()).isEqualTo(72);
+            assertThat(score.getScore().get(0)).isEqualTo(72);
+        });
+        assertThat((List<Long>) model.get("rounds")).containsExactly(10L, 11L);
+        assertThat((Set<Long>) model.get("teamRounds")).containsExactly(10L);
+    }
+
+    @Test
+    void moneyLeaderboardShowsWinnerAndLoserNetResults() {
+        Game game = buildGameWithRounds();
+        Round round = game.getRound().get(0);
+        Scorecard winner = buildCompleteScorecard();
+        winner.setRound(round);
+        winner.setPlayer(buildPlayer(5L, "Ari", "Aalto"));
+        winner.setWin(6d);
+        Scorecard loser = buildCompleteScorecard();
+        loser.setRound(round);
+        loser.setPlayer(buildPlayer(6L, "Bertta", "Birdie"));
+        when(gameService.find(1L)).thenReturn(game);
+        when(scoreService.countWins(10L)).thenReturn(List.of(winner, loser));
+        when(scoreService.countWins(11L)).thenReturn(Collections.emptyList());
+        when(scoreService.getPlayerStake(round, List.of(winner, loser))).thenReturn(2d);
+        ModelMap model = new ModelMap();
+
+        controller.leaderboard(model, 1L, null, "money");
+
+        List<LeaderboardScore> scores = (List<LeaderboardScore>) model.get("scores");
+        assertThat(scores.get(0).getName()).isEqualTo("Ari Aalto");
+        assertThat(scores.get(0).getGrossTotal()).isEqualTo(6d);
+        assertThat(scores.get(0).getStakeTotal()).isEqualTo(2d);
+        assertThat(scores.get(0).getNetTotal()).isEqualTo(4d);
+        assertThat(scores.get(1).getName()).isEqualTo("Bertta Birdie");
+        assertThat(scores.get(1).getNetTotal()).isEqualTo(-2d);
+    }
+
+    @Test
+    void strokeLeaderboardSortsAverageThenMoreRounds() {
+        Game game = buildGameWithRounds();
+        Round firstRound = game.getRound().get(0);
+        Round secondRound = game.getRound().get(1);
+        addParHoles(firstRound.getCourse(), 4);
+        addParHoles(secondRound.getCourse(), 4);
+        Player regular = buildPlayer(5L, "Ari", "Aalto");
+        Player oneRound = buildPlayer(6L, "Bertta", "Birdie");
+        Scorecard regularFirst = buildCompleteScorecard();
+        regularFirst.setRound(firstRound);
+        regularFirst.setPlayer(regular);
+        Scorecard regularSecond = buildCompleteScorecard();
+        regularSecond.setRound(secondRound);
+        regularSecond.setPlayer(regular);
+        regularSecond.setHole1(6);
+        Scorecard oneRoundScore = buildCompleteScorecard();
+        oneRoundScore.setRound(firstRound);
+        oneRoundScore.setPlayer(oneRound);
+        oneRoundScore.setHole1(5);
+        when(gameService.find(1L)).thenReturn(game);
+        when(scoreService.countWins(10L)).thenReturn(List.of(regularFirst, oneRoundScore));
+        when(scoreService.countWins(11L)).thenReturn(List.of(regularSecond));
+        ModelMap model = new ModelMap();
+
+        controller.leaderboard(model, 1L, null, "stroke");
+
+        List<LeaderboardScore> scores = (List<LeaderboardScore>) model.get("scores");
+        assertThat(model.get("sort")).isEqualTo("average");
+        assertThat(scores.get(0).getName()).isEqualTo("Ari Aalto");
+        assertThat(scores.get(0).getRoundsPlayed()).isEqualTo(2);
+        assertThat(scores.get(0).getAverageToPar()).isEqualTo(1d);
+        assertThat(scores.get(1).getName()).isEqualTo("Bertta Birdie");
+        assertThat(scores.get(1).getRoundsPlayed()).isEqualTo(1);
+        assertThat(scores.get(1).getAverageToPar()).isEqualTo(1d);
+    }
+
+    @Test
+    void birdieboardCountsEaglesAndBirdiesAcrossGameRounds() {
+        Game game = buildGameWithRounds();
+        Round round = game.getRound().get(0);
+        addParFourHoles(round.getCourse());
+        Player firstPlayer = buildPlayer(5L, "Ari", "Aalto");
+        Player secondPlayer = buildPlayer(6L, "Bertta", "Birdie");
+        Scorecard firstScore = buildCompleteScorecard();
+        firstScore.setPlayer(firstPlayer);
+        firstScore.setRound(round);
+        firstScore.setHole1(2);
+        firstScore.setHole2(3);
+        firstScore.setHole3(3);
+        Scorecard secondScore = buildCompleteScorecard();
+        secondScore.setPlayer(secondPlayer);
+        secondScore.setRound(round);
+        secondScore.setHole1(3);
+        Scorecard teamScore = buildCompleteScorecard();
+        teamScore.setRound(round);
+        teamScore.setPlayFormat(PlayFormat.GREENSOME);
+        teamScore.getParticipants().add(firstPlayer);
+        teamScore.getParticipants().add(secondPlayer);
+        teamScore.setHole4(3);
+        when(gameService.find(1L)).thenReturn(game);
+        when(scoreService.findByRoundId(10L)).thenReturn(List.of(firstScore, secondScore, teamScore));
+        when(scoreService.findByRoundId(11L)).thenReturn(Collections.emptyList());
+        ModelMap model = new ModelMap();
+
+        String view = controller.birdieboard(model, 1L);
+
+        assertThat(view).isEqualTo("birdieboard");
+        List<BirdieboardScore> eagles = (List<BirdieboardScore>) model.get("eagles");
+        List<BirdieboardScore> birdies = (List<BirdieboardScore>) model.get("birdies");
+        assertThat(eagles).hasSize(1);
+        assertThat(eagles.get(0).getName()).isEqualTo("Ari Aalto");
+        assertThat(eagles.get(0).getTotal()).isEqualTo(1);
+        assertThat(birdies.get(0).getName()).isEqualTo("Ari Aalto");
+        assertThat(birdies.get(0).getIndividualTotal()).isEqualTo(2);
+        assertThat(birdies.get(0).getTeamTotal()).isEqualTo(1);
+        assertThat(birdies.get(0).getTotal()).isEqualTo(3);
+        assertThat(birdies.get(1).getName()).isEqualTo("Bertta Birdie");
+        assertThat(birdies.get(1).getIndividualTotal()).isEqualTo(1);
+        assertThat(birdies.get(1).getTeamTotal()).isEqualTo(1);
+        assertThat(birdies.get(1).getTotal()).isEqualTo(2);
     }
 
     private Round buildRound(long roundId, long gameId) {
@@ -244,6 +487,28 @@ class ScorecardControllerTest {
         game.getRound().add(round1);
         game.getRound().add(round2);
         return game;
+    }
+
+    private Player buildPlayer(Long id, String firstName, String lastName) {
+        Player player = new Player();
+        player.setId(id);
+        player.setFirstName(firstName);
+        player.setLastName(lastName);
+        return player;
+    }
+
+    private void addParFourHoles(Course course) {
+        addParHoles(course, 4);
+    }
+
+    private void addParHoles(Course course, int par) {
+        for (int i = 1; i <= 18; i++) {
+            Hole hole = new Hole();
+            hole.setHole(i);
+            hole.setPar(par);
+            hole.setCourse(course);
+            course.getHole().add(hole);
+        }
     }
 
     private Scorecard buildCompleteScorecard() {

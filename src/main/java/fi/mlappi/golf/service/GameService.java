@@ -9,10 +9,13 @@ import fi.mlappi.golf.model.Course;
 import fi.mlappi.golf.model.Game;
 import fi.mlappi.golf.model.Hole;
 import fi.mlappi.golf.model.Round;
+import fi.mlappi.golf.model.Scorecard;
 import fi.mlappi.golf.repository.CourseRepository;
 import fi.mlappi.golf.repository.GameRepository;
 import fi.mlappi.golf.repository.HoleRepository;
 import fi.mlappi.golf.repository.RoundRepository;
+import fi.mlappi.golf.repository.ScorecardRepository;
+import jakarta.transaction.Transactional;
 
 @Service("GameService")
 public class GameService {
@@ -24,13 +27,15 @@ public class GameService {
 	CourseRepository courseRepository;
 	HoleRepository holeRepository;
 	RoundRepository roundRepository;
+	ScorecardRepository scorecardRepository;
 
 	public GameService(GameRepository gameRepository, CourseRepository courseRepository,
-			HoleRepository holeRepository, RoundRepository roundRepository) {
+			HoleRepository holeRepository, RoundRepository roundRepository, ScorecardRepository scorecardRepository) {
 		this.gameRepository = gameRepository;
 		this.courseRepository = courseRepository;
 		this.holeRepository = holeRepository;
-		this.roundRepository = roundRepository;	
+		this.roundRepository = roundRepository;
+		this.scorecardRepository = scorecardRepository;
 	}
 
 	public List<Game> getAllGames() {
@@ -63,11 +68,14 @@ public class GameService {
 		return roundRepository.save(round);
 	}
 
+	@Transactional
 	public void removeRound(long id) {
 		Round r = roundRepository.findById(id).orElse(null);
 		if (r == null) return;
 		Game g = r.getGame();
-		g.getRound().remove(r);				
+		List<Scorecard> scorecards = scorecardRepository.findByRoundId(id);
+		scorecardRepository.deleteAll(scorecards);
+		g.getRound().remove(r);
 		roundRepository.deleteById(id);
 		gameRepository.save(g);
 	}

@@ -19,10 +19,33 @@
             <input type="hidden" th:field="*{id}">
             <input type="hidden" name="gameId" th:value="${gameId}">
             <input type="hidden" name="roundId" th:value="${roundId}">
+            <input type="hidden" th:field="*{externalCompetitorId}">
 
             <fieldset th:attr="disabled=${!isAdmin}">
 
-            <div class="mb-3" th:if="${score.player == null}">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Pelimuoto</label>
+                    <select class="form-select" name="playFormat" id="play-format">
+                        <option th:each="format : ${playFormats}" th:value="${format}"
+                                th:selected="${format == score.playFormat}" th:text="${format}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4 team-field">
+                    <label class="form-label">Joukkueen nimi</label>
+                    <input class="form-control" type="text" name="teamName" th:value="${score.teamName}">
+                </div>
+                <div class="col-md-4 team-field">
+                    <label class="form-label">Joukkueen pelaajat</label>
+                    <select class="form-select" name="participantIds" multiple size="4">
+                        <option th:each="player : ${allPlayerList}" th:value="${player.key}"
+                                th:selected="${score.participants.![id].contains(player.key)}"
+                                th:text="${player.value}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3 individual-field" th:if="${score.player == null}">
                 <label class="form-label">Valitse ensin pelaaja</label>
                 <select class="form-select" th:field="*{player.id}">
                     <option value="" disabled selected>Choose player</option>
@@ -293,6 +316,17 @@
 
     window.addEventListener('resize', syncGridMode);
     syncGridMode();
+
+    const playFormat = document.getElementById('play-format');
+    function syncPlayFormat() {
+        const teamFormat = playFormat && playFormat.value !== 'INDIVIDUAL';
+        document.querySelectorAll('.team-field').forEach((element) => { element.hidden = !teamFormat; });
+        document.querySelectorAll('.individual-field').forEach((element) => { element.hidden = teamFormat; });
+    }
+    if (playFormat) {
+        playFormat.addEventListener('change', syncPlayFormat);
+        syncPlayFormat();
+    }
 
     holeInputs.forEach((input, index) => {
         let moveTimer = null;

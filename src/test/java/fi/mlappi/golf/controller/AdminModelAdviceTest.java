@@ -13,13 +13,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AdminModelAdviceTest {
 
-    private final AdminModelAdvice advice = new AdminModelAdvice();
-
     @Mock
     private HttpSession session;
 
     @Test
     void isAdminReturnsTrueWhenSessionFlagSet() {
+        AdminModelAdvice advice = new AdminModelAdvice(true);
         when(session.getAttribute("isAdmin")).thenReturn(Boolean.TRUE);
 
         boolean result = advice.isAdmin(session);
@@ -29,10 +28,19 @@ class AdminModelAdviceTest {
 
     @Test
     void isAdminReturnsFalseWhenSessionFlagMissing() {
+        AdminModelAdvice advice = new AdminModelAdvice(true);
         when(session.getAttribute("isAdmin")).thenReturn(null);
 
         boolean result = advice.isAdmin(session);
 
         assertThat(result).isFalse();
+    }
+
+    @Test
+    void disabledAdminIgnoresSessionFlag() {
+        AdminModelAdvice advice = new AdminModelAdvice(false);
+
+        assertThat(advice.isAdminEnabled()).isFalse();
+        assertThat(advice.isAdmin(session)).isFalse();
     }
 }

@@ -7,6 +7,10 @@ RUN mvn -q -DskipTests package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/target/*.war /app/app.war
+COPY deploy/public-seed /app/public-seed
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 ENV PORT=8080
+ENV JAVA_TOOL_OPTIONS="-XX:InitialRAMPercentage=20.0 -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC"
 EXPOSE 8080
-CMD ["sh", "-c", "java -Dserver.port=${PORT} -jar /app/app.war"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

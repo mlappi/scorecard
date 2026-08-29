@@ -37,10 +37,10 @@
     <li class="nav-item">
         <a class="nav-link" th:classappend="${active == 'players'} ? 'active' : ''" href="/player">Pelaajat</a>
     </li>
-    <li class="nav-item" th:if="${!isAdmin}">
+    <li class="nav-item" th:if="${adminEnabled and !isAdmin}">
         <a class="nav-link" href="/admin/login">Kirjaudu</a>
     </li>
-    <li class="nav-item" th:if="${isAdmin}">
+    <li class="nav-item" th:if="${adminEnabled and isAdmin}">
         <a class="nav-link" href="/admin/logout">Kirjaudu ulos</a>
     </li>
 </ul>

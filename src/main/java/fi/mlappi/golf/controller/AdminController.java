@@ -3,6 +3,7 @@ package fi.mlappi.golf.controller;
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
+@ConditionalOnProperty(name = "app.admin.enabled", havingValue = "true", matchIfMissing = true)
 public class AdminController {
 
     @Value("${admin.username:admin}")

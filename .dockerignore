@@ -1,0 +1,6 @@
+.git
+.metadata
+.vscode
+data
+target
+*.iml

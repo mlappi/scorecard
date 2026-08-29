@@ -7,11 +7,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 public class AdminAuthInterceptor implements HandlerInterceptor {
+
+    private final boolean adminEnabled;
+
+    public AdminAuthInterceptor(@Value("${app.admin.enabled:true}") boolean adminEnabled) {
+        this.adminEnabled = adminEnabled;
+    }
 
     private static final List<String> ALLOWED_POST_PATHS = List.of(
             "/player/search",
@@ -49,6 +56,19 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
         }
         if (path.equals("/") || path.startsWith("/app.css") || path.startsWith("/error")
                 || path.startsWith("/webjars") || path.startsWith("/images") || path.startsWith("/favicon")) {
+            return true;
+        }
+        if (!adminEnabled) {
+            if (!"GET".equalsIgnoreCase(request.getMethod()) && !ALLOWED_POST_PATHS.contains(path)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return false;
+            }
+            for (String prefix : BLOCKED_GET_PREFIXES) {
+                if (path.startsWith(prefix)) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return false;
+                }
+            }
             return true;
         }
         HttpSession session = request.getSession(false);

@@ -26,9 +26,8 @@ Spring Boot app for managing golf skin games with rounds, scorecards, and leader
 ## Admin Login / Read-only Mode
 - Without login the UI is read-only.
 - Mutating actions (add, edit, delete, save, import) are disabled or blocked.
-- Admin login uses credentials from `application.properties`:
-  - `admin.username`
-  - `admin.password`
+- Admin login uses `ADMIN_USERNAME` and `ADMIN_PASSWORD` environment variables.
+- Local development falls back to the values in `application.properties`.
 - Login: `/admin/login`
 - Logout: `/admin/logout`
 
@@ -72,12 +71,21 @@ SPRING_PROFILES_ACTIVE=postgres mvn spring-boot:run
 Configuration is in:
 - `src/main/resources/application-postgres.properties`
 
-### Render profile
+### Legacy Render profile
 ```
 SPRING_PROFILES_ACTIVE=render mvn spring-boot:run
 ```
 Configuration is in:
 - `src/main/resources/application-render.properties`
+
+### Public read-only profile
+
+The public profile disables admin login and every mutating route. It expects a
+file-based HSQL database at `/tmp/scorecard-db/devdb` by default:
+
+```
+SPRING_PROFILES_ACTIVE=public mvn spring-boot:run
+```
 
 ## Docker Compose (Postgres)
 Start database:
@@ -89,14 +97,36 @@ Then run the app with the Postgres profile:
 SPRING_PROFILES_ACTIVE=postgres mvn spring-boot:run
 ```
 
-## Dockerfile (Render)
-A Dockerfile is provided for Render Web Services.
-It builds the app with Maven and runs the WAR:
+## Public Render deployment
+
+`render.yaml` creates a free Docker Web Service in Frankfurt, activates the
+`public` profile and checks `/actuator/health`. The container restores the
+versioned HSQL snapshot before every start, so runtime changes never become
+part of the next deployment.
+
+Before updating the public snapshot, stop the local application cleanly. Then
+run:
+
+```powershell
+./scripts/update-public-seed.ps1
+```
+
+The export is built from a temporary copy: it does not modify the local
+database. Email addresses, external user IDs and external competitor IDs are
+removed from the public copy. Review the snapshot change, run `mvn test`, and
+push the commit. Render then builds and publishes the new image automatically.
+
+For a local container smoke test:
+
 ```
 docker build -t golfapp .
-docker run -e PORT=8080 -p 8080:8080 golfapp
+docker run --rm -e SPRING_PROFILES_ACTIVE=public -p 8080:8080 golfapp
 ```
+
+Open `http://localhost:8080/actuator/health` and a leaderboard page before
+publishing.
 
 ## Notes
 - The app uses a session flag to determine admin status.
 - If a mutating endpoint is requested without admin login, it redirects to `/admin/login`.
+- In the public profile, admin login is absent and mutating endpoints return HTTP 403.

@@ -1,7 +1,9 @@
 #!/bin/sh
 set -eu
 
-if [ "${SPRING_PROFILES_ACTIVE:-}" = "public" ]; then
+active_profiles=",${SPRING_PROFILES_ACTIVE:-},"
+case "$active_profiles" in
+*,public,*|*,render,*)
     database_dir="${PUBLIC_DB_DIR:-/tmp/scorecard-db}"
     case "$database_dir" in
         /tmp/*|/var/tmp/*|/app/runtime/*)
@@ -24,6 +26,8 @@ if [ "${SPRING_PROFILES_ACTIVE:-}" = "public" ]; then
         [ -f "$seed_file" ] || continue
         cp "$seed_file" "$database_dir/"
     done
-fi
+    echo "Restored versioned database seed for profile ${SPRING_PROFILES_ACTIVE}"
+    ;;
+esac
 
 exec java -Dserver.port="${PORT:-8080}" -jar /app/app.war

@@ -71,12 +71,17 @@ SPRING_PROFILES_ACTIVE=postgres mvn spring-boot:run
 Configuration is in:
 - `src/main/resources/application-postgres.properties`
 
-### Legacy Render profile
+### Render profile with ephemeral admin access
 ```
-SPRING_PROFILES_ACTIVE=render mvn spring-boot:run
+SPRING_PROFILES_ACTIVE=render ADMIN_USERNAME=admin ADMIN_PASSWORD=secret mvn spring-boot:run
 ```
-Configuration is in:
-- `src/main/resources/application-render.properties`
+
+The Docker entrypoint restores the versioned database before each start. Admin
+login is available, but changes made in the browser disappear on the next
+restart or deploy. Configure the exact environment variable names
+`ADMIN_USERNAME` and `ADMIN_PASSWORD` in Render and redeploy after changing
+them. The `render` profile intentionally fails to start if either value is
+missing, so the local default password cannot become public accidentally.
 
 ### Public read-only profile
 
@@ -103,6 +108,10 @@ SPRING_PROFILES_ACTIVE=postgres mvn spring-boot:run
 `public` profile and checks `/actuator/health`. The container restores the
 versioned HSQL snapshot before every start, so runtime changes never become
 part of the next deployment.
+
+An existing manually configured Render service can continue to use the
+`render` profile. Both `render` and `public` restore the same versioned seed;
+only `render` exposes admin login.
 
 Before updating the public snapshot, stop the local application cleanly. Then
 run:

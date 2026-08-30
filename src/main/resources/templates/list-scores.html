@@ -13,6 +13,7 @@
         <div class="d-flex flex-wrap gap-2">
             <a class="btn btn-accent" th:href="@{/score/leaderboard/{id}(id=${game.id})}">Leaderboard</a>
             <a class="btn btn-accent" th:href="@{/score/birdieboard/{id}(id=${game.id})}">Birdieboard</a>
+            <a class="btn btn-accent" th:href="@{/score/statistics/{id}(id=${game.id})}">Tilastot</a>
             <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#import-form"
                     aria-expanded="false" aria-controls="import-form" th:if="${isAdmin}">Tuo tulokset</button>
             <span class="btn btn-outline-dark disabled" th:unless="${isAdmin}" aria-disabled="true">Tuo tulokset</span>

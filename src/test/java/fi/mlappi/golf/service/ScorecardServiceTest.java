@@ -49,6 +49,25 @@ class ScorecardServiceTest {
         assertThat(otherTeam.getWin()).isZero();
     }
 
+    @Test
+    void completeCardHelpersUseAllEighteenHolesAndCoursePar() {
+        Round round = buildRound();
+        Scorecard scorecard = buildTeamScorecard(1L, round, 4, 10L, 11L);
+        scorecard.setHole1(3);
+        scorecard.setHole2(2);
+
+        assertThat(service.hasCompleteScore(scorecard)).isTrue();
+        assertThat(service.getScoreToPar(scorecard)).isEqualTo(-3);
+        assertThat(service.countScoresRelativeToPar(scorecard, -1)).isEqualTo(1);
+        assertThat(service.countScoresRelativeToPar(scorecard, -2)).isEqualTo(1);
+
+        scorecard.setHole18(null);
+
+        assertThat(service.hasCompleteScore(scorecard)).isFalse();
+        assertThat(service.getScoreToPar(scorecard)).isZero();
+        assertThat(service.countScoresRelativeToPar(scorecard, -1)).isZero();
+    }
+
     private Round buildRound() {
         Course course = new Course();
         for (int number = 1; number <= 18; number++) {

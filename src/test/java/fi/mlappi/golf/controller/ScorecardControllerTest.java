@@ -33,6 +33,8 @@ import fi.mlappi.golf.model.PlayFormat;
 import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.model.Scorecard;
 import fi.mlappi.golf.service.GameService;
+import fi.mlappi.golf.service.GameStatistics;
+import fi.mlappi.golf.service.GameStatisticsService;
 import fi.mlappi.golf.service.PlayerService;
 import fi.mlappi.golf.service.ScorecardService;
 
@@ -41,6 +43,9 @@ class ScorecardControllerTest {
 
     @Mock
     private GameService gameService;
+
+    @Mock
+    private GameStatisticsService gameStatisticsService;
 
     @Mock
     private ScorecardService scoreService;
@@ -446,6 +451,12 @@ class ScorecardControllerTest {
         when(gameService.find(1L)).thenReturn(game);
         when(scoreService.findByRoundId(10L)).thenReturn(List.of(firstScore, secondScore, teamScore));
         when(scoreService.findByRoundId(11L)).thenReturn(Collections.emptyList());
+        when(scoreService.countScoresRelativeToPar(firstScore, -2)).thenReturn(1);
+        when(scoreService.countScoresRelativeToPar(firstScore, -1)).thenReturn(2);
+        when(scoreService.countScoresRelativeToPar(secondScore, -2)).thenReturn(0);
+        when(scoreService.countScoresRelativeToPar(secondScore, -1)).thenReturn(1);
+        when(scoreService.countScoresRelativeToPar(teamScore, -2)).thenReturn(0);
+        when(scoreService.countScoresRelativeToPar(teamScore, -1)).thenReturn(1);
         ModelMap model = new ModelMap();
 
         String view = controller.birdieboard(model, 1L);
@@ -464,6 +475,23 @@ class ScorecardControllerTest {
         assertThat(birdies.get(1).getIndividualTotal()).isEqualTo(1);
         assertThat(birdies.get(1).getTeamTotal()).isEqualTo(1);
         assertThat(birdies.get(1).getTotal()).isEqualTo(2);
+    }
+
+    @Test
+    void statisticsShowsCalculatedGameStatistics() {
+        Game game = buildGameWithRounds();
+        GameStatistics statistics = new GameStatistics();
+        statistics.setCompetitionRounds(2);
+        when(gameService.find(1L)).thenReturn(game);
+        when(gameStatisticsService.calculate(game)).thenReturn(statistics);
+        ModelMap model = new ModelMap();
+
+        String view = controller.statistics(model, 1L);
+
+        assertThat(view).isEqualTo("statistics");
+        assertThat(model.get("gameId")).isEqualTo(1L);
+        assertThat(model.get("game")).isSameAs(game);
+        assertThat(model.get("statistics")).isSameAs(statistics);
     }
 
     private Round buildRound(long roundId, long gameId) {

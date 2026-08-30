@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Tilastot')}"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="~{layout :: nav('games')}"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Tilastot <span th:if="${game != null}" th:text="${'– ' + game.name}">– Game</span></h1>
+        </div>
+        <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="text-muted small">Kilpailukierrokset</div>
+                <div class="h3 mb-0" th:text="${statistics.competitionRounds}">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="text-muted small">Pelaajasuoritukset</div>
+                <div class="h3 mb-0" th:text="${statistics.playerPerformances}">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="text-muted small">Eri pelaajat</div>
+                <div class="h3 mb-0" th:text="${statistics.uniquePlayers}">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="text-muted small">Pelaajia / kierros</div>
+                <div class="h3 mb-0"
+                     th:text="${#numbers.formatDecimal(statistics.averagePlayersPerRound, 1, 2)}">0,00</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="text-muted small">Lyönnit yhteensä</div>
+                <div class="h3 mb-0" th:text="${statistics.totalStrokes}">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="text-muted small">Keskitulos</div>
+                <div class="h3 mb-0"
+                     th:text="${#numbers.formatDecimal(statistics.averageScore, 1, 2)}">0,00</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <div class="text-muted small">Keskimääräinen +/- par</div>
+                <div class="h3 mb-0"
+                     th:text="${#numbers.formatDecimal(statistics.averageToPar, 1, 2)}">0,00</div>
+            </div>
+        </div>
+    </div>
+
+    <section class="card-surface mb-4">
+        <h2 class="h4 mb-3">Kenttäennätykset</h2>
+        <div th:if="${#lists.isEmpty(statistics.bestCourseScores)}" class="text-muted">
+            Ei vielä tuloksia.
+        </div>
+        <div th:if="${!#lists.isEmpty(statistics.bestCourseScores)}" class="row g-3">
+            <div th:each="best : ${statistics.bestCourseScores}" class="col-12 col-sm-6 col-xl-3">
+                <div class="stat-card h-100">
+                    <div class="fw-semibold mb-2" th:text="${best.courseName}">Kenttä</div>
+                    <div class="h3 mb-0"
+                         th:text="${(best.toPar > 0 ? '+' : '') + best.toPar}">-1</div>
+                    <div class="text-muted small" th:text="${best.strokes + ' lyöntiä'}">71 lyöntiä</div>
+                    <div class="small mt-2" th:text="${best.competitorNames}">Pelaaja</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card-surface h-100">
+                <h2 class="h4">Birdiet</h2>
+                <div class="row g-3 mt-1">
+                    <div class="col-4">
+                        <div class="text-muted small">Yhteensä</div>
+                        <div class="h4 mb-0" th:text="${statistics.totalBirdies}">0</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small">/ suoritus</div>
+                        <div class="h4 mb-0"
+                             th:text="${#numbers.formatDecimal(statistics.averageBirdiesPerPerformance, 1, 2)}">0,00</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small">Kentällä / kierros</div>
+                        <div class="h4 mb-0"
+                             th:text="${#numbers.formatDecimal(statistics.averageFieldBirdiesPerRound, 1, 2)}">0,00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card-surface h-100">
+                <h2 class="h4">Eaglet</h2>
+                <div class="row g-3 mt-1">
+                    <div class="col-4">
+                        <div class="text-muted small">Yhteensä</div>
+                        <div class="h4 mb-0" th:text="${statistics.totalEagles}">0</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small">/ suoritus</div>
+                        <div class="h4 mb-0"
+                             th:text="${#numbers.formatDecimal(statistics.averageEaglesPerPerformance, 1, 2)}">0,00</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small">Kentällä / kierros</div>
+                        <div class="h4 mb-0"
+                             th:text="${#numbers.formatDecimal(statistics.averageFieldEaglesPerRound, 1, 2)}">0,00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-surface">
+        <h2 class="h4 mb-3">Kierrokset</h2>
+        <div th:if="${statistics.rounds != null and !#lists.isEmpty(statistics.rounds)}" class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Kierros</th>
+                        <th>Kenttä</th>
+                        <th>Pelaajat</th>
+                        <th>Lyönnit</th>
+                        <th>Keskitulos</th>
+                        <th>+/- par</th>
+                        <th>Birdiet / suor.</th>
+                        <th>Eaglet / suor.</th>
+                        <th>Birdiet</th>
+                        <th>Eaglet</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row : ${statistics.rounds}">
+                        <td>
+                            <div class="fw-semibold" th:text="${row.round.name}"></div>
+                            <div class="text-muted small" th:text="${#dates.format(row.round.date, 'dd.MM.yyyy')}"></div>
+                        </td>
+                        <td th:text="${row.round.course != null ? row.round.course.name : '–'}"></td>
+                        <td th:text="${row.uniquePlayers}"></td>
+                        <td th:text="${row.totalStrokes}"></td>
+                        <td th:text="${#numbers.formatDecimal(row.averageScore, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(row.averageToPar, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(row.averageBirdiesPerPerformance, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(row.averageEaglesPerPerformance, 1, 2)}"></td>
+                        <td th:text="${row.fieldBirdies}"></td>
+                        <td th:text="${row.fieldEagles}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${statistics.rounds == null or #lists.isEmpty(statistics.rounds)}" class="empty-state">
+            <p>Pelissä ei ole vielä tilastoitavia kierrostuloksia.</p>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{layout :: footer}"></footer>
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

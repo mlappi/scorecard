@@ -64,6 +64,17 @@ Uses `src/main/resources/application.properties`:
 mvn spring-boot:run
 ```
 
+### HSQL Database Manager
+
+Stop the application before opening the file-based database. On Windows,
+launch HSQL Database Manager Swing from the project root with:
+
+```powershell
+Start-Process -FilePath "javaw.exe" -ArgumentList @('-cp', "$env:USERPROFILE\.m2\repository\org\hsqldb\hsqldb\2.7.3\hsqldb-2.7.3.jar", 'org.hsqldb.util.DatabaseManagerSwing', '--driver', 'org.hsqldb.jdbc.JDBCDriver', '--url', "jdbc:hsqldb:file:$($PWD.Path.Replace('\', '/'))/data/hsqldb/devdb", '--user', 'SA')
+```
+
+The local database user is `SA` and its password is empty.
+
 ### Postgres profile
 ```
 SPRING_PROFILES_ACTIVE=postgres mvn spring-boot:run

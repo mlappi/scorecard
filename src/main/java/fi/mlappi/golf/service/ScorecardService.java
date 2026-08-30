@@ -46,8 +46,42 @@ public class ScorecardService {
     }
     
 	public List<Scorecard> findByRoundId(Long roundId)  {
-    	return scorecardRepository.findByRoundId(roundId);
-    }   
+		return scorecardRepository.findByRoundId(roundId);
+	}
+
+	public boolean hasCompleteScore(Scorecard scorecard) {
+		if (scorecard == null) {
+			return false;
+		}
+		for (int hole = 1; hole <= 18; hole++) {
+			if (scorecard.getScore(hole) == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public int getScoreToPar(Scorecard scorecard) {
+		if (!hasCompleteScore(scorecard) || scorecard.getRound() == null
+				|| scorecard.getRound().getCourse() == null) {
+			return 0;
+		}
+		return scorecard.getCountTotal() - scorecard.getRound().getCourse().getCountTotal();
+	}
+
+	public int countScoresRelativeToPar(Scorecard scorecard, int parDifference) {
+		if (!hasCompleteScore(scorecard) || scorecard.getRound() == null
+				|| scorecard.getRound().getCourse() == null) {
+			return 0;
+		}
+		int count = 0;
+		for (int hole = 1; hole <= 18; hole++) {
+			if (scorecard.getScore(hole) == scorecard.getRound().getPar(hole) + parDifference) {
+				count++;
+			}
+		}
+		return count;
+	}
 
     public Scorecard find(long id)  {
 		return scorecardRepository.findById(id).orElse(null);

@@ -36,6 +36,7 @@ import fi.mlappi.golf.model.PlayFormat;
 import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.model.Scorecard;
 import fi.mlappi.golf.service.GameService;
+import fi.mlappi.golf.service.GameStatisticsService;
 import fi.mlappi.golf.service.PlayerService;
 import fi.mlappi.golf.service.ScorecardService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,8 @@ public class ScorecardController {
 
 	@Autowired
 	GameService gameService;
+	@Autowired
+	GameStatisticsService gameStatisticsService;
 	@Autowired
 	ScorecardService scoreService;
 	@Autowired
@@ -162,6 +165,15 @@ public class ScorecardController {
 		model.addAttribute("eagles", buildBirdieboardScores(game, -2));
 		model.addAttribute("birdies", buildBirdieboardScores(game, -1));
 		return "birdieboard";
+	}
+
+	@RequestMapping("/score/statistics/{id}")
+	public String statistics(ModelMap model, @PathVariable("id") long id) {
+		Game game = gameService.find(id);
+		model.addAttribute("gameId", id);
+		model.addAttribute("game", game);
+		model.addAttribute("statistics", gameStatisticsService.calculate(game));
+		return "statistics";
 	}
 
 	@RequestMapping("/score/add/{id}")
@@ -501,13 +513,7 @@ public class ScorecardController {
 		for (Round round : game.getRound()) {
 			List<Scorecard> scorecards = scoreService.findByRoundId(round.getId());
 			for (Scorecard scorecard : scorecards) {
-				int count = 0;
-				for (int hole = 1; hole <= 18; hole++) {
-					Integer strokes = scorecard.getScore(hole);
-					if (strokes != null && strokes == round.getPar(hole) + parDifference) {
-						count++;
-					}
-				}
+				int count = scoreService.countScoresRelativeToPar(scorecard, parDifference);
 				for (Player player : scorecard.getCompetitors()) {
 					BirdieboardScore boardScore = scoreMap.computeIfAbsent(player.getId(), id -> {
 						BirdieboardScore score = new BirdieboardScore();

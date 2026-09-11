@@ -12,53 +12,55 @@
         <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3">
-            <div class="stat-card h-100">
-                <div class="text-muted small">Kilpailukierrokset</div>
-                <div class="h3 mb-0" th:text="${statistics.competitionRounds}">0</div>
+    <section class="card-surface mb-4">
+        <div class="row g-3">
+            <div class="col-6 col-lg-3">
+                <div class="stat-card h-100">
+                    <div class="text-muted small">Kilpailukierrokset</div>
+                    <div class="h3 mb-0" th:text="${statistics.competitionRounds}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card h-100">
+                    <div class="text-muted small">Pelaajasuoritukset</div>
+                    <div class="h3 mb-0" th:text="${statistics.playerPerformances}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card h-100">
+                    <div class="text-muted small">Eri pelaajat</div>
+                    <div class="h3 mb-0" th:text="${statistics.uniquePlayers}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card h-100">
+                    <div class="text-muted small">Pelaajia / kierros</div>
+                    <div class="h3 mb-0"
+                         th:text="${#numbers.formatDecimal(statistics.averagePlayersPerRound, 1, 2)}">0,00</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card h-100">
+                    <div class="text-muted small">Lyönnit yhteensä</div>
+                    <div class="h3 mb-0" th:text="${statistics.totalStrokes}">0</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card h-100">
+                    <div class="text-muted small">Keskitulos</div>
+                    <div class="h3 mb-0"
+                         th:text="${#numbers.formatDecimal(statistics.averageScore, 1, 2)}">0,00</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card h-100">
+                    <div class="text-muted small">Keskimääräinen +/- par</div>
+                    <div class="h3 mb-0"
+                         th:text="${#numbers.formatDecimal(statistics.averageToPar, 1, 2)}">0,00</div>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card h-100">
-                <div class="text-muted small">Pelaajasuoritukset</div>
-                <div class="h3 mb-0" th:text="${statistics.playerPerformances}">0</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card h-100">
-                <div class="text-muted small">Eri pelaajat</div>
-                <div class="h3 mb-0" th:text="${statistics.uniquePlayers}">0</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card h-100">
-                <div class="text-muted small">Pelaajia / kierros</div>
-                <div class="h3 mb-0"
-                     th:text="${#numbers.formatDecimal(statistics.averagePlayersPerRound, 1, 2)}">0,00</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card h-100">
-                <div class="text-muted small">Lyönnit yhteensä</div>
-                <div class="h3 mb-0" th:text="${statistics.totalStrokes}">0</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card h-100">
-                <div class="text-muted small">Keskitulos</div>
-                <div class="h3 mb-0"
-                     th:text="${#numbers.formatDecimal(statistics.averageScore, 1, 2)}">0,00</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card h-100">
-                <div class="text-muted small">Keskimääräinen +/- par</div>
-                <div class="h3 mb-0"
-                     th:text="${#numbers.formatDecimal(statistics.averageToPar, 1, 2)}">0,00</div>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <section class="card-surface mb-4">
         <h2 class="h4 mb-3">Kenttäennätykset</h2>

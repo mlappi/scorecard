@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Birdie Run')}"></head>
+<body class="app-body">
+<div class="bg-glow"></div>
+<header th:replace="~{layout :: nav('games')}"></header>
+<main class="container py-4">
+    <div class="page-header">
+        <div>
+            <h1>Birdie Run</h1>
+            <p class="text-muted" th:text="${game != null ? game.name : ''}"></p>
+        </div>
+        <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
+    </div>
+
+    <div class="nav nav-pills gap-2 mb-4">
+        <a class="nav-link" th:href="@{/score/birdieboard/{id}(id=${gameId})}">Birdieboard</a>
+        <a class="nav-link active" th:href="@{/score/birdie-run/{id}(id=${gameId})}">Birdie Pisteet</a>
+    </div>
+
+    <div class="card-surface">
+        <h2 class="h4 mb-1">Birdie Pisteet</h2>
+        <p class="text-muted">Birdie 1 p, eagle 2 p</p>
+        <div th:if="${points != null and !#lists.isEmpty(points)}" class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Pelaaja</th>
+                        <th>Birdiet</th>
+                        <th>Eaglet</th>
+                        <th>Pisteet</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="score, iter : ${points}">
+                        <td th:text="${iter.index + 1}"></td>
+                        <td th:text="${score.name}"></td>
+                        <td th:text="${score.birdies}"></td>
+                        <td th:text="${score.eagles}"></td>
+                        <td class="fw-semibold" th:text="${score.points}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${points == null or #lists.isEmpty(points)}" class="empty-state">
+            <p>Ei tuloksia vielä.</p>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{layout :: footer}"></footer>
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

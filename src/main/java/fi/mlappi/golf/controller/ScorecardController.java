@@ -167,6 +167,17 @@ public class ScorecardController {
 		return "birdieboard";
 	}
 
+	@RequestMapping("/score/birdie-run/{id}")
+	public String birdieRun(ModelMap model, @PathVariable("id") long id) {
+		Game game = gameService.find(id);
+		List<BirdieboardScore> eagles = buildBirdieboardScores(game, -2);
+		List<BirdieboardScore> birdies = buildBirdieboardScores(game, -1);
+		model.addAttribute("gameId", id);
+		model.addAttribute("game", game);
+		model.addAttribute("points", buildBirdieboardPoints(eagles, birdies));
+		return "birdie-run";
+	}
+
 	@RequestMapping("/score/statistics/{id}")
 	public String statistics(ModelMap model, @PathVariable("id") long id) {
 		Game game = gameService.find(id);
@@ -517,6 +528,7 @@ public class ScorecardController {
 				for (Player player : scorecard.getCompetitors()) {
 					BirdieboardScore boardScore = scoreMap.computeIfAbsent(player.getId(), id -> {
 						BirdieboardScore score = new BirdieboardScore();
+						score.setPlayerId(id);
 						score.setName(player.getFirstName() + " " + player.getLastName());
 						return score;
 					});
@@ -534,6 +546,36 @@ public class ScorecardController {
 		scores = new ArrayList<>(scores);
 		scores.sort((s1, s2) -> {
 			int cmp = Integer.compare(s2.getTotal(), s1.getTotal());
+			if (cmp != 0) {
+				return cmp;
+			}
+			return s1.getName().compareToIgnoreCase(s2.getName());
+		});
+		return scores;
+	}
+
+	private List<BirdieboardPointsScore> buildBirdieboardPoints(List<BirdieboardScore> eagles,
+			List<BirdieboardScore> birdies) {
+		Map<Long, BirdieboardPointsScore> scoreMap = new HashMap<>();
+		for (BirdieboardScore eagle : eagles) {
+			BirdieboardPointsScore score = scoreMap.computeIfAbsent(eagle.getPlayerId(), playerId -> {
+				BirdieboardPointsScore pointsScore = new BirdieboardPointsScore();
+				pointsScore.setName(eagle.getName());
+				return pointsScore;
+			});
+			score.setEagles(eagle.getTotal());
+		}
+		for (BirdieboardScore birdie : birdies) {
+			BirdieboardPointsScore score = scoreMap.computeIfAbsent(birdie.getPlayerId(), playerId -> {
+				BirdieboardPointsScore pointsScore = new BirdieboardPointsScore();
+				pointsScore.setName(birdie.getName());
+				return pointsScore;
+			});
+			score.setBirdies(birdie.getTotal());
+		}
+		List<BirdieboardPointsScore> scores = new ArrayList<>(scoreMap.values());
+		scores.sort((s1, s2) -> {
+			int cmp = Integer.compare(s2.getPoints(), s1.getPoints());
 			if (cmp != 0) {
 				return cmp;
 			}

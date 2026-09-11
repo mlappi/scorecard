@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class BirdieboardScore {
+	private long playerId;
 	private String name;
 	private int individualTotal;
 	private int teamTotal;

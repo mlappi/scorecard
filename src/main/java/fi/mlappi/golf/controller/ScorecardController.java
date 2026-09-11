@@ -149,6 +149,7 @@ public class ScorecardController {
 		}
 		model.addAttribute("scores", scoreList);
 		model.addAttribute("gameId", id);
+		model.addAttribute("game", game);
 		model.addAttribute("rounds", rounds);
 		model.addAttribute("teamRounds", teamRounds);
 		model.addAttribute("sort", sort);

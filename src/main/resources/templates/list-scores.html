@@ -8,7 +8,11 @@
     <div class="page-header">
         <div>
             <h1>Tulokset</h1>
-            <p class="text-muted" th:text="${game != null ? game.name : ''}"></p>
+            <div class="competition-identity" th:if="${game != null}">
+                <img class="competition-logo" src="/midicup.png" alt="Midi Cup"
+                     th:if="${#strings.containsIgnoreCase(game.name, 'midi')}">
+                <p class="text-muted mb-0" th:text="${game.name}"></p>
+            </div>
         </div>
         <div class="d-flex flex-wrap gap-2">
             <a class="btn btn-accent" th:href="@{/score/leaderboard/{id}(id=${game.id})}">Leaderboard</a>

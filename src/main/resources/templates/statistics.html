@@ -7,12 +7,18 @@
 <main class="container py-4">
     <div class="page-header">
         <div>
-            <h1>Tilastot <span th:if="${game != null}" th:text="${'– ' + game.name}">– Game</span></h1>
+            <h1>Tilastot</h1>
+            <div class="competition-identity" th:if="${game != null}">
+                <img class="competition-logo" src="/midicup.png" alt="Midi Cup"
+                     th:if="${#strings.containsIgnoreCase(game.name, 'midi')}">
+                <p class="text-muted mb-0" th:text="${game.name}"></p>
+            </div>
         </div>
         <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
     </div>
 
     <section class="card-surface mb-4">
+        <h2 class="h4 mb-3">Suoritukset</h2>
         <div class="row g-3">
             <div class="col-6 col-lg-3">
                 <div class="stat-card h-100">

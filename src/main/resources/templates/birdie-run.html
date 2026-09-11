@@ -7,19 +7,23 @@
 <main class="container py-4">
     <div class="page-header">
         <div>
-            <h1>Birdie Run</h1>
-            <p class="text-muted" th:text="${game != null ? game.name : ''}"></p>
+            <h1>Birdieboard</h1>
+            <div class="competition-identity" th:if="${game != null}">
+                <img class="competition-logo" src="/midicup.png" alt="Midi Cup"
+                     th:if="${#strings.containsIgnoreCase(game.name, 'midi')}">
+                <p class="text-muted mb-0" th:text="${game.name}"></p>
+            </div>
         </div>
         <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
     </div>
 
     <div class="nav nav-pills gap-2 mb-4">
         <a class="nav-link" th:href="@{/score/birdieboard/{id}(id=${gameId})}">Birdieboard</a>
-        <a class="nav-link active" th:href="@{/score/birdie-run/{id}(id=${gameId})}">Birdie Pisteet</a>
+        <a class="nav-link active" th:href="@{/score/birdie-run/{id}(id=${gameId})}">Pisteet</a>
     </div>
 
     <div class="card-surface">
-        <h2 class="h4 mb-1">Birdie Pisteet</h2>
+        <h2 class="h4 mb-1">Pisteet</h2>
         <p class="text-muted">Birdie 1 p, eagle 2 p</p>
         <div th:if="${points != null and !#lists.isEmpty(points)}" class="table-responsive">
             <table class="table table-hover align-middle">

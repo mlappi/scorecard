@@ -129,6 +129,20 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     z-index: 1;
 }
 
+.competition-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.35rem;
+}
+
+.competition-logo {
+    display: block;
+    width: clamp(72px, 9vw, 108px);
+    height: 54px;
+    object-fit: contain;
+}
+
 .card-surface {
     background: var(--card);
     border-radius: 20px;
@@ -172,6 +186,26 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     background: rgba(28, 124, 84, 0.2);
     border-color: var(--accent-strong);
     color: var(--accent-strong);
+}
+
+.nav-pills .nav-link {
+    color: var(--accent-strong);
+    font-weight: 600;
+}
+
+.nav-pills .nav-link:hover {
+    background: rgba(28, 124, 84, 0.12);
+    color: var(--accent-strong);
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background: var(--accent);
+    color: #fff;
+}
+
+.nav-pills .nav-link:focus-visible {
+    box-shadow: 0 0 0 0.2rem rgba(28, 124, 84, 0.35);
 }
 
 .search-row {
@@ -622,6 +656,4 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
         display: none;
     }
 }
-
-
 

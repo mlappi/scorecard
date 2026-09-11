@@ -8,14 +8,18 @@
     <div class="page-header">
         <div>
             <h1>Birdieboard</h1>
-            <p class="text-muted" th:text="${game != null ? game.name : ''}"></p>
+            <div class="competition-identity" th:if="${game != null}">
+                <img class="competition-logo" src="/midicup.png" alt="Midi Cup"
+                     th:if="${#strings.containsIgnoreCase(game.name, 'midi')}">
+                <p class="text-muted mb-0" th:text="${game.name}"></p>
+            </div>
         </div>
         <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
     </div>
 
     <div class="nav nav-pills gap-2 mb-4">
         <a class="nav-link active" th:href="@{/score/birdieboard/{id}(id=${gameId})}">Birdieboard</a>
-        <a class="nav-link" th:href="@{/score/birdie-run/{id}(id=${gameId})}">Birdie Pisteet</a>
+        <a class="nav-link" th:href="@{/score/birdie-run/{id}(id=${gameId})}">Pisteet</a>
     </div>
 
     <div class="row g-4">

@@ -2,6 +2,8 @@ package fi.mlappi.golf.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
@@ -10,18 +12,18 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import fi.mlappi.golf.model.Round;
 import fi.mlappi.golf.model.Scorecard;
 import fi.mlappi.golf.repository.RoundRepository;
 import fi.mlappi.golf.repository.ScorecardRepository;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import org.springframework.dao.DataIntegrityViolationException;
 
 @Service("ScorecardService")
 public class ScorecardService {
@@ -31,8 +33,11 @@ public class ScorecardService {
 	@Autowired
 	RoundRepository roundRepository;
 
+	private static final Duration SCORECARD_CACHE_TTL = Duration.ofMinutes(15);
+
 	// locks for serializing saves per round+player to avoid duplicate inserts under concurrency
 	private final ConcurrentMap<String, Object> saveLocks = new ConcurrentHashMap<>();
+	private final ConcurrentMap<Long, CachedScorecards> scorecardCache = new ConcurrentHashMap<>();
 	
     public List<Scorecard> getAllScorecards() {
 		List<Scorecard> scores = new ArrayList<>();
@@ -46,7 +51,22 @@ public class ScorecardService {
     }
     
 	public List<Scorecard> findByRoundId(Long roundId)  {
-		return scorecardRepository.findByRoundId(roundId);
+		if (roundId == null) {
+			return new ArrayList<>();
+		}
+		Instant now = Instant.now();
+		CachedScorecards cached = scorecardCache.compute(roundId, (id, current) -> {
+			if (current != null && current.expiresAt().isAfter(now)) {
+				return current;
+			}
+			return new CachedScorecards(List.copyOf(scorecardRepository.findByRoundId(id)),
+					now.plus(SCORECARD_CACHE_TTL));
+		});
+		return new ArrayList<>(cached.scorecards());
+	}
+
+	public void clearResultCache() {
+		scorecardCache.clear();
 	}
 
 	public boolean hasCompleteScore(Scorecard scorecard) {
@@ -89,7 +109,9 @@ public class ScorecardService {
 
 	public Scorecard save(Scorecard s) {
 		if (s.getRound() == null || (!s.isTeamScorecard() && s.getPlayer() == null)) {
-			return scorecardRepository.save(s);
+			Scorecard saved = scorecardRepository.save(s);
+			evictRound(s);
+			return saved;
 		}
 
 		String competitorKey = s.isTeamScorecard()
@@ -104,15 +126,21 @@ public class ScorecardService {
 			if (existing.isPresent()) {
 				Scorecard e = existing.get();
 				copyEditableFields(s, e);
-				return scorecardRepository.save(e);
+				Scorecard saved = scorecardRepository.save(e);
+				evictRound(e);
+				return saved;
 			}
-			return scorecardRepository.save(s);
+			Scorecard saved = scorecardRepository.save(s);
+			evictRound(s);
+			return saved;
 		} catch (DataIntegrityViolationException ex) {
 			Optional<Scorecard> existingAfter = findExisting(s);
 			if (existingAfter.isPresent()) {
 				Scorecard e = existingAfter.get();
 				copyEditableFields(s, e);
-				return scorecardRepository.save(e);
+				Scorecard saved = scorecardRepository.save(e);
+				evictRound(e);
+				return saved;
 			}
 			throw ex;
 		} finally {
@@ -156,7 +184,9 @@ public class ScorecardService {
 
 
     public void delete(long id) {
+		Scorecard scorecard = scorecardRepository.findById(id).orElse(null);
 		scorecardRepository.deleteById(id);
+		evictRound(scorecard);
     }
     
 	public List<Scorecard> countWins(Long roundId) {		
@@ -206,9 +236,14 @@ public class ScorecardService {
 			if (winCents != null && winCents > 0) {
 				scorecard.setWin(BigDecimal.valueOf(winCents).movePointLeft(2).doubleValue());
 			}
-			scorecardRepository.save(scorecard);
 		}
 		return scores;
+	}
+
+	private void evictRound(Scorecard scorecard) {
+		if (scorecard != null && scorecard.getRound() != null && scorecard.getRound().getId() != null) {
+			scorecardCache.remove(scorecard.getRound().getId());
+		}
 	}
 
 	public double getPlayerStake(Round round, List<Scorecard> scores) {
@@ -274,6 +309,9 @@ public class ScorecardService {
 		private final Map<Integer, Set<Scorecard>> winnersByHole = new HashMap<>();
 		private final Map<Integer, Long> winCentsByHole = new HashMap<>();
 		private long awardedPotCents;
+	}
+
+	private record CachedScorecards(List<Scorecard> scorecards, Instant expiresAt) {
 	}
     
 }

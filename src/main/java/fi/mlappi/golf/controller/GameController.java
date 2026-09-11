@@ -114,6 +114,7 @@ public class GameController  {
 		if (id > 0) {
 			log.debug("remove round " + id);
 			gameService.removeRound(id);
+			scoreService.clearResultCache();
 			redirectAttributes.addFlashAttribute("message", "Kierros ja sen tuloskortit on poistettu onnistuneesti.");
 		}
 		return "redirect:/game/edit/" + gameId;
@@ -133,6 +134,7 @@ public class GameController  {
 				gameService.save(round);				
 			}
 			gameService.save(game);
+			scoreService.clearResultCache();
 			if(newGame)
 				model.put("message", "Uusi peli on lisätty onnistuneesti.");				
 			else

@@ -8,7 +8,11 @@
     <div class="page-header">
         <div>
             <h1>Leaderboard - Win The Right Holes!</h1>
-            <p class="text-muted">Kierrostulokset ja tuotot</p>
+            <div class="competition-identity" th:if="${game != null}">
+                <img class="competition-logo" src="/midicup.png" alt="Midi Cup"
+                     th:if="${#strings.containsIgnoreCase(game.name, 'midi')}">
+                <p class="text-muted mb-0" th:text="${game.name}"></p>
+            </div>
         </div>
         <a class="btn btn-outline-dark" th:href="@{/score/list/{id}(id=${gameId})}">Takaisin</a>
     </div>
